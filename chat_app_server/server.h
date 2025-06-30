@@ -5,7 +5,7 @@
 class Server
 {
 public:
-	Server(const std::string& serverName, const int& serverPort, const int& maxConnections);
+	Server(const int& maxConnections);
 	bool Initialize(const std::string& serverName, const int& serverPort);
 	bool IsInitialized();
 	void Run();
@@ -15,4 +15,13 @@ protected:
 	SOCKET serverSocket;
 	sockaddr_in serverAddr;
 	int maxConnections;
+
+	fd_set master;
+	fd_set read_fds;
+	sockaddr_in clientAddr;
+	SOCKET fdmax;
+	SOCKET newfd;
+	char messageBuffer[256];
+	int receivedBytes;
+	int addrlen;
 };

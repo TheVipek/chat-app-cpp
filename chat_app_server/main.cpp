@@ -15,7 +15,11 @@ int main()
         return 1;
     }
 
-    server = new Server();
+    server = new Server(10);
     
+    server->Initialize("127.0.0.1", 8080);  //localhost
+
+
+    server->Run();
 
 }
