@@ -1,26 +1,21 @@
-﻿# CMakeList.txt : CMake project for chat_app_client, include source and define
+﻿# CMakeList.txt : CMake project for chat_app_server, include source and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
+
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("chat_app_client")
-
-find_package(ftxui REQUIRED)
+project ("chat_app_server")
 
 # Add source to this project's executable.
-add_executable (chat_app_client "main.cpp" )
-target_link_libraries(chat_app_client
-    PRIVATE ftxui::screen
-    PRIVATE ftxui::dom
-    PRIVATE ftxui::component
-)
+add_executable (chat_app_server "main.cpp" "server.cpp" "server.h")
+
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET chat_app_client PROPERTY CXX_STANDARD 20)
+  set_property(TARGET chat_app_server PROPERTY CXX_STANDARD 20)
 endif()
 
 # TODO: Add tests and install targets if needed.
