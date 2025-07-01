@@ -10,10 +10,20 @@ if (POLICY CMP0141)
 endif()
 
 project ("chat_app_server")
+find_package(Protobuf CONFIG REQUIRED)
 
-# Add source to this project's executable.
-add_executable (chat_app_server "main.cpp" "server.cpp" "server.h")
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
+add_executable (chat_app_server "main.cpp" "server.cpp" "server.h" ${PROTO_SRCS} ${PROTO_HDRS})
+
+target_include_directories(chat_app_server PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Protobuf_INCLUDE_DIRS}
+)
+
+target_link_libraries(chat_app_server
+    PRIVATE protobuf::libprotobuf
+)
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET chat_app_server PROPERTY CXX_STANDARD 20)
 endif()

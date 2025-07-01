@@ -1,11 +1,7 @@
 {
-  "name": "chat-app-client",
+  "name": "chat-app-server",
   "version-string": "0.0.1",
   "dependencies": [
-    {
-      "name": "ftxui",
-      "version>=": "6.1.9"
-    },
     {
       "name": "protobuf"
     }

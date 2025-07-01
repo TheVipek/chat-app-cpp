@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "communication.pb.h"
 #include <ftxui/dom/elements.hpp>  // for Elements, gridbox, Fit, operator|, text, border, Element
 #include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
 #include "ftxui/dom/node.hpp"      // for Render
@@ -17,16 +18,11 @@
 #include <chrono>
 #include <cstdlib>
 #include <random>
-
 #pragma comment(lib, "ws2_32.lib")
 
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 8080
 
-struct ChatMessage {
-	std::string userName;
-	std::string message;
-};
 SOCKET clientSocket;
 std::string currentInput;
 
@@ -40,17 +36,17 @@ using namespace ftxui;
 
 ChatMessage GetChatMessage( std::string msg,  std::string userName)
 {
-	ChatMessage chatMessage{};
-	chatMessage.message = msg;
-	chatMessage.userName = userName;
+	ChatMessage chatMessage;
+	chatMessage.set_message(msg);
+	chatMessage.set_username(userName);
 
 	return chatMessage;
 }
 void AddChatMessage( std::string msg,  std::string userName)
 {
 	ChatMessage chatMessage{};
-	chatMessage.message = msg;
-	chatMessage.userName = userName;
+	chatMessage.set_message(msg);
+	chatMessage.set_username(userName);
 	chatMutex.lock();
 	chatHistory.push_back(chatMessage);
 	chatMutex.unlock();
@@ -67,7 +63,14 @@ void HandleInput() {
 		return;
 
 	auto msg = GetChatMessage(currentInput, userName);
-	int sendResult = send(clientSocket, msg.message.c_str(), msg.message.length(), 0);
+	
+	Envelope envelope;
+	envelope.set_type(MessageType::CHAT_MESSAGE);
+	envelope.set_payload(msg.SerializeAsString());
+
+	std::string serializedEnvelope = envelope.SerializeAsString();
+
+	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
 
 	if (sendResult == SOCKET_ERROR) {
 		AddChatMessage("send failed: " + std::to_string(WSAGetLastError()), "[ERROR]");
@@ -96,7 +99,7 @@ void UpdateChat() {
 
 		chatMutex.lock();
 		for (const auto& msg : chatHistory) {
-			message_elements.push_back(text(msg.userName + ":" + msg.message));
+			message_elements.push_back(text(msg.username() + ":" + msg.message()));
 		}
 		chatMutex.unlock();
 
@@ -134,7 +137,21 @@ void ListenForMessages(SOCKET clientSocket)
 			}
 		}
 		else {
-			AddChatMessage("USER: " + std::string(buffer, receivedBytes), userName);
+
+			Envelope envelope;
+			envelope.ParseFromString(buffer);
+
+			switch (envelope.type())
+			{
+			case MessageType::CHAT_MESSAGE: {
+				ChatMessage chatMessage;
+				chatMessage.ParseFromString(envelope.payload());
+				AddChatMessage(chatMessage);
+				break;
+			}
+			default:
+				break;
+			}
 		}
 	}
 

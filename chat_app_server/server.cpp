@@ -76,7 +76,9 @@ void Server::Run() {
     while (true)
     {
         FD_ZERO(&read_fds);
-        read_fds = master;
+        for (u_int i = 0; i < master.fd_count; i++) {
+            FD_SET(master.fd_array[i], &read_fds);
+        }
         if (select(fdmax, &read_fds, NULL, NULL, NULL) == SOCKET_ERROR)
         {
             std::cerr << "select " << WSAGetLastError() << "\n";
@@ -125,8 +127,8 @@ void Server::Run() {
                     }
                     else
                     {
-                        //messageBuffer[receivedBytes] = '\0';
-                        std::cout << "sending data content:" << messageBuffer << "\n";
+                        //no specific handling for Envelope for now
+
                         for (int j = 0; j <= read_fds.fd_count; j++)
                         {
                             SOCKET dest = read_fds.fd_array[j];
@@ -149,6 +151,33 @@ void Server::Run() {
         }
     }
 }
+
+void Server::HandleEnvelope(const Envelope& envelope, const SOCKET& recvFromSocket)
+{
+    switch (envelope.type())
+    {
+    case MessageType::CHAT_MESSAGE:
+        for (int j = 0; j <= read_fds.fd_count; j++)
+        {
+            SOCKET dest = read_fds.fd_array[j];
+            if (FD_ISSET(dest, &master))
+            {
+                //send to all except server
+                if (dest != serverSocket && dest != recvFromSocket)
+                {
+                    if (send(dest, messageBuffer, receivedBytes, 0) == -1)
+                    {
+                        std::cerr << "send " << WSAGetLastError() << "\n";
+                    }
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 
 void Server::Stop() {
     if (!initialized)

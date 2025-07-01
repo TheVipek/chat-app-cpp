@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <ws2tcpip.h>
-
+#include "../generated/communication.pb.h"
 class Server
 {
 public:
@@ -24,4 +24,5 @@ protected:
 	char messageBuffer[256];
 	int receivedBytes;
 	int addrlen;
+	void HandleEnvelope(const Envelope& envelope, const SOCKET& recvFromSocket);
 };

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message ChatMessage {
+    string userName = 1;
+    string message = 2;
+}
+
+enum MessageType {
+    CHAT_MESSAGE = 0;
+    USER_JOIN = 1;
+    USER_LEAVE = 2;
+}
+
+message Envelope {
+    MessageType type = 1;
+    bytes payload = 2;
+}

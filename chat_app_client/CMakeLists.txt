@@ -11,16 +11,26 @@ endif()
 project ("chat_app_client")
 
 find_package(ftxui REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 
-# Add source to this project's executable.
-add_executable (chat_app_client "main.cpp" )
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
+
+add_executable (chat_app_client "main.cpp" ${PROTO_SRCS} ${PROTO_HDRS})
+
+target_include_directories(chat_app_client PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Protobuf_INCLUDE_DIRS}
+)
+
 target_link_libraries(chat_app_client
     PRIVATE ftxui::screen
     PRIVATE ftxui::dom
     PRIVATE ftxui::component
+    PRIVATE protobuf::libprotobuf
 )
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET chat_app_client PROPERTY CXX_STANDARD 20)
 endif()
 
 # TODO: Add tests and install targets if needed.
+  
