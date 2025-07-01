@@ -1,4 +1,12 @@
 ﻿#pragma once
+#include <ftxui/dom/elements.hpp>  // for Elements, gridbox, Fit, operator|, text, border, Element
+#include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
+#include "ftxui/dom/node.hpp"      // for Render
+#include "ftxui/screen/color.hpp"  // for ftxui
+#include "ftxui/component/component.hpp"
+
+#include <stdio.h>  // for getchar
+#include <memory>                   // for allocator, shared_ptr
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iostream>
@@ -8,98 +16,111 @@
 #include <mutex>
 #include <chrono>
 #include <cstdlib>
-#include <ftxui/dom/elements.hpp>
-#include <ftxui/screen/screen.hpp>
+#include <random>
+
 #pragma comment(lib, "ws2_32.lib")
 
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 8080
 
 struct ChatMessage {
+	std::string userName;
 	std::string message;
-	bool displayed;
 };
+SOCKET clientSocket;
+std::string currentInput;
+
 std::string userName;
-std::string currentMessage;
-std::vector<ChatMessage> chatHistory;  // Stores chat messages
+std::vector<ChatMessage> chatHistory;
 std::mutex chatMutex;
-std::thread inputThread;
 std::thread uiThread;
 std::thread syncChatThread;
 
+using namespace ftxui;
 
-
-void ClearConsole() {
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-
-	// Clear the screen
-	COORD topLeft = { 0, 0 };
-	DWORD written;
-	FillConsoleOutputCharacter(hConsole, ' ',
-		consoleInfo.dwSize.X * consoleInfo.dwSize.Y,
-		topLeft, &written);
-	SetConsoleCursorPosition(hConsole, topLeft);
-}
-void PrintChatUI() {
-	chatMutex.lock();
-
-	bool anyDisplayed = false;
-	for (auto& msg : chatHistory) {
-		if (!msg.displayed)
-		{
-			std::cout << "\r" << msg.message << "\n";
-			msg.displayed = true;
-
-			anyDisplayed = true;
-		}
-	}
-
-	if (anyDisplayed)
-	{
-		std::cout << "> ";
-	}
-
-	chatMutex.unlock();
-}
-
-void UpdateChat() {
-	while (true) {
-		PrintChatUI();
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-}
-
-void AddChatMessage(const std::string& msg)
+ChatMessage GetChatMessage( std::string msg,  std::string userName)
 {
 	ChatMessage chatMessage{};
 	chatMessage.message = msg;
-	chatMessage.displayed = false;
+	chatMessage.userName = userName;
+
+	return chatMessage;
+}
+void AddChatMessage( std::string msg,  std::string userName)
+{
+	ChatMessage chatMessage{};
+	chatMessage.message = msg;
+	chatMessage.userName = userName;
 	chatMutex.lock();
 	chatHistory.push_back(chatMessage);
 	chatMutex.unlock();
 }
+void AddChatMessage(ChatMessage message)
+{
+	chatMutex.lock();
+	chatHistory.push_back(message);
+	chatMutex.unlock();
+}
 
-void HandleInput(SOCKET clientSocket) {
-	while (true) {
-		std::cout << "> ";
-		std::getline(std::cin, currentMessage);
-		currentMessage += "\0";
-		if (currentMessage.empty()) continue;
+void HandleInput() {
+	if (currentInput.empty())
+		return;
 
-		int sendResult = send(clientSocket, currentMessage.c_str(), currentMessage.length(), 0);
+	auto msg = GetChatMessage(currentInput, userName);
+	int sendResult = send(clientSocket, msg.message.c_str(), msg.message.length(), 0);
 
-		if (sendResult == SOCKET_ERROR) {
-			AddChatMessage("[Error] send failed: " + std::to_string(WSAGetLastError()));
-			break;
-		}
-
+	if (sendResult == SOCKET_ERROR) {
+		AddChatMessage("send failed: " + std::to_string(WSAGetLastError()), "[ERROR]");
+		closesocket(clientSocket);
+	}
+	else {
+		AddChatMessage(msg);
 	}
 
-	closesocket(clientSocket);
+
+	currentInput.clear();
 }
+
+void UpdateChat() {
+	auto message_component = Container::Vertical({});
+
+	Component input_component = Input(&currentInput, "Type your message here");
+
+	auto main_component = Container::Vertical({
+		message_component,
+		input_component
+		});
+
+	auto main_renderer = Renderer(main_component, [&] {
+		Elements message_elements;
+
+		chatMutex.lock();
+		for (const auto& msg : chatHistory) {
+			message_elements.push_back(text(msg.userName + ":" + msg.message));
+		}
+		chatMutex.unlock();
+
+		return vbox({
+			vbox(message_elements) | flex,
+			separator(),
+			hbox({ input_component->Render() }) | border
+			}) | border | flex;
+		});
+
+	auto component = CatchEvent(main_renderer, [&](Event event) {
+		if (event == Event::Return) {
+			HandleInput();
+			return true;
+		}
+		return false;
+		});
+
+	auto screen = ScreenInteractive::Fullscreen();
+	screen.Loop(component);
+}
+
+
+
 
 void ListenForMessages(SOCKET clientSocket)
 {
@@ -108,12 +129,12 @@ void ListenForMessages(SOCKET clientSocket)
 		int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
 		if (receivedBytes <= 0) {
 			if (receivedBytes == 0) {
-				AddChatMessage("[Server disconnected]");
+				AddChatMessage("Server disconnected", "[ERROR]");
 				break;
 			}
 		}
 		else {
-			AddChatMessage("USER: " + std::string(buffer, receivedBytes));
+			AddChatMessage("USER: " + std::string(buffer, receivedBytes), userName);
 		}
 	}
 
@@ -122,76 +143,57 @@ void ListenForMessages(SOCKET clientSocket)
 
 int main()
 {
-	//int id = rand() % 10000000;
-	//userName = "USER " + id;
-	//WSADATA wsaData;
-	//if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-	//	std::cerr << "WSAStartup failed.\n";
-	//	return 1;
-	//}
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distrib(0, 9999999);
+	int id = distrib(gen);
 
-	//SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	//if (clientSocket == INVALID_SOCKET)
-	//{
-	//	std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
-	//	WSACleanup();
-	//	return 1;
-	//}
+	userName = "USER " + std::to_string(id);
 
+	uiThread = std::thread(UpdateChat);
+	uiThread.detach();
 
-	//sockaddr_in serverAddr;
-	//serverAddr.sin_family = AF_INET;
-	//inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
-	//serverAddr.sin_port = htons(SERVER_PORT);
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+		AddChatMessage("WSAStartup failed", "[ERROR]");
+		return 1;
+	}
 
-	//std::cerr << "Trying to connect to server..." << "\n";
-	//int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
-
-	//if (returnCall == SOCKET_ERROR)
-	//{
-	//	std::cerr << "Connection error" << "\n";
-	//	closesocket(clientSocket);
-	//	WSACleanup();
-	//	return 1;
-	//}
+	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (clientSocket == INVALID_SOCKET)
+	{
+		AddChatMessage("Socket creation failed: " + WSAGetLastError(), "[ERROR]");
+		WSACleanup();
+		return 1;
+	}
 
 
-	//ClearConsole();
+	sockaddr_in serverAddr;
+	serverAddr.sin_family = AF_INET;
+	inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(SERVER_PORT);
 
-	//std::cerr << "Connection established!" << "\n";
+	AddChatMessage("Trying to connect to server...", "[INFO]");
+
+	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
+
+	if (returnCall == SOCKET_ERROR)
+	{
+		AddChatMessage("Connection error", "[ERROR]");
+		closesocket(clientSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	AddChatMessage("Connection established!", "[INFO]");
+	AddChatMessage("Welcome to the chat!", "[INFO]");
 
 
-	//uiThread = std::thread(UpdateChat);
-	//inputThread = std::thread(HandleInput, clientSocket);
-	//syncChatThread = std::thread(ListenForMessages, clientSocket);
+	syncChatThread = std::thread(ListenForMessages, clientSocket);
+	syncChatThread.join();
 
-	//uiThread.join();
-	//inputThread.join();
-	//syncChatThread.join();
-
-	//WSACleanup();
-	//return 1;
-
-	using namespace ftxui;
-
-	// Create a simple document with three text elements.
-	Element document = hbox({
-	  text("left") | border,
-	  text("middle") | border | flex,
-	  text("right") | border,
-		});
-
-	// Create a screen with full width and height fitting the document.
-	auto screen = Screen::Create(
-		Dimension::Full(),       // Width
-		Dimension::Fit(document) // Height
-	);
-
-	// Render the document onto the screen.
-	Render(screen, document);
-
-	// Print the screen to the console.
-	screen.Print();
+	WSACleanup();
+	return 1;
 }
 
 
