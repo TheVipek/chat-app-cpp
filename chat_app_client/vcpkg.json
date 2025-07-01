@@ -1,0 +1,10 @@
+{
+  "name": "chat-app-client",
+  "version-string": "0.0.1",
+  "dependencies": [
+    {
+      "name": "ftxui",
+      "version>=": "6.1.9"
+    }
+  ]
+}

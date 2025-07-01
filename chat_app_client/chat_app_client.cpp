@@ -8,6 +8,8 @@
 #include <mutex>
 #include <chrono>
 #include <cstdlib>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/screen.hpp>
 #pragma comment(lib, "ws2_32.lib")
 
 #define SERVER_ADDRESS "127.0.0.1"
@@ -120,76 +122,76 @@ void ListenForMessages(SOCKET clientSocket)
 
 int main()
 {
-	int id = rand() % 10000000;
-	userName = "USER " + id;
-	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		std::cerr << "WSAStartup failed.\n";
-		return 1;
-	}
+	//int id = rand() % 10000000;
+	//userName = "USER " + id;
+	//WSADATA wsaData;
+	//if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+	//	std::cerr << "WSAStartup failed.\n";
+	//	return 1;
+	//}
 
-	SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (clientSocket == INVALID_SOCKET)
-	{
-		std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
-		WSACleanup();
-		return 1;
-	}
-
-
-	sockaddr_in serverAddr;
-	serverAddr.sin_family = AF_INET;
-	inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(SERVER_PORT);
-
-	std::cerr << "Trying to connect to server..." << "\n";
-	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
-
-	if (returnCall == SOCKET_ERROR)
-	{
-		std::cerr << "Connection error" << "\n";
-		closesocket(clientSocket);
-		WSACleanup();
-		return 1;
-	}
+	//SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	//if (clientSocket == INVALID_SOCKET)
+	//{
+	//	std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
+	//	WSACleanup();
+	//	return 1;
+	//}
 
 
-	ClearConsole();
+	//sockaddr_in serverAddr;
+	//serverAddr.sin_family = AF_INET;
+	//inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
+	//serverAddr.sin_port = htons(SERVER_PORT);
 
-	std::cerr << "Connection established!" << "\n";
+	//std::cerr << "Trying to connect to server..." << "\n";
+	//int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
+
+	//if (returnCall == SOCKET_ERROR)
+	//{
+	//	std::cerr << "Connection error" << "\n";
+	//	closesocket(clientSocket);
+	//	WSACleanup();
+	//	return 1;
+	//}
 
 
-	uiThread = std::thread(UpdateChat);
-	inputThread = std::thread(HandleInput, clientSocket);
-	syncChatThread = std::thread(ListenForMessages, clientSocket);
+	//ClearConsole();
 
-	uiThread.join();
-	inputThread.join();
-	syncChatThread.join();
+	//std::cerr << "Connection established!" << "\n";
 
-	WSACleanup();
-	return 1;
 
-	//using namespace ftxui;
+	//uiThread = std::thread(UpdateChat);
+	//inputThread = std::thread(HandleInput, clientSocket);
+	//syncChatThread = std::thread(ListenForMessages, clientSocket);
 
-	//// Create a simple document with three text elements.
-	//Element document = hbox({
-	//  text("left") | border,
-	//  text("middle") | border | flex,
-	//  text("right") | border,
-	//	});
+	//uiThread.join();
+	//inputThread.join();
+	//syncChatThread.join();
 
-	//// Create a screen with full width and height fitting the document.
-	//auto screen = Screen::Create(
-	//	Dimension::Full(),       // Width
-	//	Dimension::Fit(document) // Height
-	//);
+	//WSACleanup();
+	//return 1;
 
-	//// Render the document onto the screen.
-	//Render(screen, document);
+	using namespace ftxui;
 
-	//// Print the screen to the console.
-	//screen.Print();
+	// Create a simple document with three text elements.
+	Element document = hbox({
+	  text("left") | border,
+	  text("middle") | border | flex,
+	  text("right") | border,
+		});
+
+	// Create a screen with full width and height fitting the document.
+	auto screen = Screen::Create(
+		Dimension::Full(),       // Width
+		Dimension::Fit(document) // Height
+	);
+
+	// Render the document onto the screen.
+	Render(screen, document);
+
+	// Print the screen to the console.
+	screen.Print();
 }
 
 
