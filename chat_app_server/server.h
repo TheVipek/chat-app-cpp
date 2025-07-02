@@ -16,8 +16,9 @@ protected:
 	sockaddr_in serverAddr;
 	int maxConnections;
 
-	fd_set master;
-	fd_set read_fds;
+	std::list<SOCKET> connectedSockets;
+	fd_set writeSet;
+	fd_set readSet;
 	sockaddr_in clientAddr;
 	SOCKET fdmax;
 	SOCKET newfd;
