@@ -1,13 +1,17 @@
 #include <iostream>
 #include "server.h"
+#include "ServerMessageHandler.h"
 
 Server::Server(const int& maxConnections) {
-
-    connectedSockets = std::list<SOCKET>();
+    srand(time(0));
+    connectedUsers = std::map<SOCKET, ClientUser>();
     initialized = false;
     this->maxConnections = maxConnections;
+    serverMessageHandler = new ServerMessageHandler(this);
 }
-
+Server::~Server() {
+    delete(serverMessageHandler);
+}
 bool Server::Initialize(const std::string& serverAddress, const int& serverPort) {
     if (initialized)
         return false;
@@ -17,7 +21,8 @@ bool Server::Initialize(const std::string& serverAddress, const int& serverPort)
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (serverSocket == INVALID_SOCKET) {
-        std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
+        printf("Socket creation failed %d \n", WSAGetLastError());
+
         WSACleanup();
         return false;
     }
@@ -32,7 +37,8 @@ bool Server::Initialize(const std::string& serverAddress, const int& serverPort)
 
         if (inet_pton(AF_INET, serverAddress.c_str(), &addr) == -1)
         {
-            std::cerr << "Invalid IPv4 address, setting as local \n";
+            printf("Invalid IPv4 address, setting as local \n");
+
             serverAddr.sin_addr.s_addr = INADDR_ANY; // local address ip
         }
         else {
@@ -43,22 +49,21 @@ bool Server::Initialize(const std::string& serverAddress, const int& serverPort)
     serverAddr.sin_port = htons(serverPort);
 
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed: " << WSAGetLastError() << "\n";
+        printf("Bind failed %d \n", WSAGetLastError());
+
         closesocket(serverSocket);
         return false;
     }
 
-    std::cout << "Server listening on port" << serverPort << "...\n";
+    printf("Server listening on port %d \n", serverPort);
 
     if (listen(serverSocket, maxConnections) == SOCKET_ERROR) {
-        std::cerr << "Listen failed: " << WSAGetLastError() << "\n";
+        printf("Listen failed: %d \n", WSAGetLastError());
         closesocket(serverSocket);
         return false;
     }
 
     initialized = true;
-
-    connectedSockets.push_back(serverSocket);
     fdmax = serverSocket;
 
     return true;
@@ -80,13 +85,16 @@ void Server::Run() {
         FD_ZERO(&readSet);
         FD_ZERO(&writeSet);
 
-        for(auto soc : connectedSockets)
+        for(auto soc : connectedUsers)
         {
-            FD_SET(soc, &readSet);
-            FD_SET(soc, &writeSet);
+            FD_SET(soc.first, &readSet);
+            FD_SET(soc.first, &writeSet);
         }
 
-        
+        //always include server, so incoming 'connect()' would be handled properly
+        FD_SET(serverSocket, &readSet);
+        FD_SET(serverSocket, &writeSet);
+
 
         //nfds is beign ignored on winsocks, that's why i pass 0 
         //i have no plans on testing it on linux
@@ -107,11 +115,14 @@ void Server::Run() {
 
                 if ((newfd = accept(serverSocket, (sockaddr*)&clientAddr, &addrlen)) == INVALID_SOCKET)
                 {
-                    std::cerr << "accept " << WSAGetLastError() << "\n";
+                    printf("accept %d \n", WSAGetLastError());
                 }
                 else
                 {
-                    connectedSockets.push_back(newfd);
+                    ClientUser serverUser{};
+                    serverUser.set_id(-1);
+                    serverUser.set_name("UnknownUser");
+                    connectedUsers.insert({ newfd, serverUser });
                     fdmax = (newfd > fdmax) ? newfd : fdmax;
 
                     char ip[INET_ADDRSTRLEN];
@@ -122,72 +133,35 @@ void Server::Run() {
             //handle data from client
             else
             {
-                if ((receivedBytes = recv(senderSocket, messageBuffer, sizeof(messageBuffer), 0)) <= 0)
+                if (connectedUsers.contains(senderSocket))
                 {
-                    if (receivedBytes == 0)
+                    if ((receivedBytes = recv(senderSocket, messageBuffer, sizeof(messageBuffer), 0)) <= 0)
                     {
-                        //no connection
-                        printf("selectserver: socket %d hung up\n", senderSocket);
-                    }
-                    else {
-                        std::cerr << "recv " << WSAGetLastError() << "\n";
-                    }
-                    closesocket(senderSocket);
-                    connectedSockets.remove(senderSocket);
-                }
-                else
-                {
-                    //no specific handling for Envelope for now
-
-                    for (int j = 0; j < writeSet.fd_count; j++)
-                    {
-                        SOCKET dest = writeSet.fd_array[j];
-
-                        //send to all except server and sender
-                        if (dest != serverSocket && dest != senderSocket)
+                        if (receivedBytes == 0)
                         {
-                            if (send(dest, messageBuffer, receivedBytes, 0) == -1)
-                            {
-                                std::cerr << "send " << WSAGetLastError() << "\n";
-                            }
+                            //no connection
+                            printf("selectserver: socket %d hung up\n", senderSocket);
                         }
+                        else {
+                            printf("recv %d \n", WSAGetLastError());
+                        }
+                        closesocket(senderSocket);
+                        connectedUsers.erase(senderSocket);
+                    }
+                    else
+                    {
+                        Envelope envelope{};
+                        envelope.ParseFromString(messageBuffer);
+                        serverMessageHandler->HandleMessage(envelope, senderSocket);
                     }
                 }
-                
-
             }
         }
     }
 }
 
-//void Server::HandleEnvelope(const Envelope& envelope, const SOCKET& recvFromSocket)
-//{
-//    switch (envelope.type())
-//    {
-//    case MessageType::CHAT_MESSAGE:
-//        for (int j = 0; j <= readSet.fd_count; j++)
-//        {
-//            SOCKET dest = readSet.fd_array[j];
-//            if (FD_ISSET(dest, &writeSet))
-//            {
-//                //send to all except server
-//                if (dest != serverSocket && dest != recvFromSocket)
-//                {
-//                    if (send(dest, messageBuffer, receivedBytes, 0) == -1)
-//                    {
-//                        std::cerr << "send " << WSAGetLastError() << "\n";
-//                    }
-//                }
-//            }
-//        }
-//        break;
-//    default:
-//        break;
-//    }
-//}
-
-
 void Server::Stop() {
     if (!initialized)
         return;
 }
+

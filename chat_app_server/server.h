@@ -2,10 +2,17 @@
 #include <string>
 #include <ws2tcpip.h>
 #include "../generated/communication.pb.h"
+#include <stdlib.h>
+#include <time.h>
+
+class ServerMessageHandler;
+
 class Server
 {
 public:
 	Server(const int& maxConnections);
+	~Server();
+	friend ServerMessageHandler;
 	bool Initialize(const std::string& serverName, const int& serverPort);
 	bool IsInitialized();
 	void Run();
@@ -15,8 +22,9 @@ protected:
 	SOCKET serverSocket;
 	sockaddr_in serverAddr;
 	int maxConnections;
-
-	std::list<SOCKET> connectedSockets;
+	
+	ServerMessageHandler* serverMessageHandler;
+	std::map<SOCKET, ClientUser> connectedUsers;
 	fd_set writeSet;
 	fd_set readSet;
 	sockaddr_in clientAddr;
@@ -25,5 +33,4 @@ protected:
 	char messageBuffer[256];
 	int receivedBytes;
 	int addrlen;
-	void HandleEnvelope(const Envelope& envelope, const SOCKET& recvFromSocket);
 };

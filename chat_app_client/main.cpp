@@ -22,34 +22,24 @@
 
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 8080
+using namespace ftxui;
 
 SOCKET clientSocket;
 std::string currentInput;
-
-std::string userName;
+ClientUser clientUser;
 std::vector<ChatMessage> chatHistory;
+
 std::mutex chatMutex;
 std::thread uiThread;
 std::thread syncChatThread;
 
-using namespace ftxui;
-
-ChatMessage GetChatMessage( std::string msg,  std::string userName)
+ChatMessage GetChatMessage( std::string msg,  std::string sender)
 {
 	ChatMessage chatMessage;
 	chatMessage.set_message(msg);
-	chatMessage.set_username(userName);
+	chatMessage.set_sender(sender);
 
 	return chatMessage;
-}
-void AddChatMessage( std::string msg,  std::string userName)
-{
-	ChatMessage chatMessage{};
-	chatMessage.set_message(msg);
-	chatMessage.set_username(userName);
-	chatMutex.lock();
-	chatHistory.push_back(chatMessage);
-	chatMutex.unlock();
 }
 void AddChatMessage(ChatMessage message)
 {
@@ -58,31 +48,59 @@ void AddChatMessage(ChatMessage message)
 	chatMutex.unlock();
 }
 
+bool SendToServer(Envelope envelope) {
+	std::string serializedEnvelope = envelope.SerializeAsString();
+	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
+
+	if (sendResult == SOCKET_ERROR) {
+		auto chatMessage = GetChatMessage("send failed: " + std::to_string(WSAGetLastError()), "[ERROR]");
+		AddChatMessage(chatMessage);
+		closesocket(clientSocket);
+
+		return false;
+	}
+
+	return true;
+}
+
 void HandleInput() {
 	if (currentInput.empty())
 		return;
 
-	auto msg = GetChatMessage(currentInput, userName);
-	
-	Envelope envelope;
-	envelope.set_type(MessageType::CHAT_MESSAGE);
-	envelope.set_payload(msg.SerializeAsString());
-
-	std::string serializedEnvelope = envelope.SerializeAsString();
-
-	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
-
-	if (sendResult == SOCKET_ERROR) {
-		AddChatMessage("send failed: " + std::to_string(WSAGetLastError()), "[ERROR]");
-		closesocket(clientSocket);
-	}
-	else {
+	if (currentInput[0] == '/') // command
+	{
+		auto msg = GetChatMessage(currentInput, "[VISIBLE ONLY BY YOU]");
 		AddChatMessage(msg);
+		
+		Envelope envelope{};
+
+		envelope.set_type(MessageType::COMMAND);
+		envelope.set_sendtype(MessageSendType::Unicast);
+		CommandRequest cr{};
+		cr.set_request(currentInput);
+		envelope.set_payload(cr.SerializeAsString());
+		SendToServer(envelope);
+	}
+	else 
+	{
+		auto msg = GetChatMessage(currentInput, clientUser.name());
+
+		Envelope envelope{};
+		envelope.set_type(MessageType::CHAT_MESSAGE);
+		envelope.set_sendtype(MessageSendType::Multicast);
+		envelope.set_payload(msg.SerializeAsString());
+
+		if (SendToServer(envelope))
+		{
+			AddChatMessage(msg);
+		}
 	}
 
 
 	currentInput.clear();
 }
+
+
 
 void UpdateChat() {
 	auto message_component = Container::Vertical({});
@@ -99,7 +117,7 @@ void UpdateChat() {
 
 		chatMutex.lock();
 		for (const auto& msg : chatHistory) {
-			message_elements.push_back(text(msg.username() + ":" + msg.message()));
+			message_elements.push_back(text(msg.sender() + ":" + msg.message()));
 		}
 		chatMutex.unlock();
 
@@ -118,8 +136,19 @@ void UpdateChat() {
 		return false;
 		});
 
-	auto screen = ScreenInteractive::Fullscreen();
-	screen.Loop(component);
+	 auto screen = ScreenInteractive::Fullscreen();
+
+	 std::thread autoRefreshScreen([&screen] {
+		 while (true)
+		 {
+			 using namespace std::chrono_literals;
+			 screen.PostEvent(Event::Custom);
+			 std::this_thread::sleep_for(0.2s);
+		 }
+	 });
+
+	 screen.Loop(component);
+
 }
 
 
@@ -127,12 +156,14 @@ void UpdateChat() {
 
 void ListenForMessages(SOCKET clientSocket)
 {
+
 	while (true) {
 		char buffer[256];
 		int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
 		if (receivedBytes <= 0) {
 			if (receivedBytes == 0) {
-				AddChatMessage("Server disconnected", "[ERROR]");
+				auto chatMessage = GetChatMessage("Server disconnected", "[ERROR]");
+				AddChatMessage(chatMessage);
 				break;
 			}
 		}
@@ -149,6 +180,30 @@ void ListenForMessages(SOCKET clientSocket)
 				AddChatMessage(chatMessage);
 				break;
 			}
+			case MessageType::COMMAND: {
+				CommandResponse cres;
+				cres.ParseFromString(envelope.payload());
+
+				//in very simple way for now, just want to have it working correctly
+				if (cres.type() == CommandType::HELP)
+				{
+					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
+				else if (cres.type() == CommandType::NICKNAME)
+				{
+					clientUser.ParseFromString(cres.response());
+
+					ChatMessage chatMessage = GetChatMessage("Set new nickname to: " + clientUser.name(), "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
+				else if (cres.type() == CommandType::INVALID)
+				{
+					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
+				break;
+			}
 			default:
 				break;
 			}
@@ -160,26 +215,27 @@ void ListenForMessages(SOCKET clientSocket)
 
 int main()
 {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> distrib(0, 9999999);
-	int id = distrib(gen);
-
-	userName = "USER " + std::to_string(id);
-
 	uiThread = std::thread(UpdateChat);
 	uiThread.detach();
 
 	WSADATA wsaData;
+
+	ChatMessage chatMessage;
+	clientUser = ClientUser{};
+	clientUser.set_name("UserUnknown");
+	clientUser.set_id(-1);
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		AddChatMessage("WSAStartup failed", "[ERROR]");
+		chatMessage = GetChatMessage("WSAStartup failed", "[ERROR]");
+		AddChatMessage(chatMessage);
 		return 1;
 	}
 
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (clientSocket == INVALID_SOCKET)
 	{
-		AddChatMessage("Socket creation failed: " + WSAGetLastError(), "[ERROR]");
+		chatMessage = GetChatMessage("Socket creation failed: " + WSAGetLastError(), "[ERROR]");
+		AddChatMessage(chatMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -190,20 +246,25 @@ int main()
 	inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
 	serverAddr.sin_port = htons(SERVER_PORT);
 
-	AddChatMessage("Trying to connect to server...", "[INFO]");
+	chatMessage = GetChatMessage("Trying to connect to server...", "[INFO]");
+	AddChatMessage(chatMessage);
 
 	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
 
 	if (returnCall == SOCKET_ERROR)
 	{
-		AddChatMessage("Connection error", "[ERROR]");
+		chatMessage = GetChatMessage("Connection error", "[ERROR]");
+		AddChatMessage(chatMessage);
 		closesocket(clientSocket);
 		WSACleanup();
 		return 1;
 	}
 
-	AddChatMessage("Connection established!", "[INFO]");
-	AddChatMessage("Welcome to the chat!", "[INFO]");
+	chatMessage = GetChatMessage("Connection established!", "[INFO]");
+	AddChatMessage(chatMessage);
+	chatMessage = GetChatMessage("Welcome on the server! (/help to see commands)", "[INFO]");
+	AddChatMessage(chatMessage);
+
 
 
 	syncChatThread = std::thread(ListenForMessages, clientSocket);

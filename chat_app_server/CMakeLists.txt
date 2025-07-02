@@ -14,7 +14,7 @@ find_package(Protobuf CONFIG REQUIRED)
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
-add_executable (chat_app_server "main.cpp" "server.cpp" "server.h" ${PROTO_SRCS} ${PROTO_HDRS})
+add_executable (chat_app_server "main.cpp" "Server.cpp" "Server.h" ${PROTO_SRCS} ${PROTO_HDRS} "ServerMessageHandler.h" "ServerMessageHandler.cpp")
 
 target_include_directories(chat_app_server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}

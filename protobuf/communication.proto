@@ -1,17 +1,60 @@
 syntax = "proto3";
 
+message ServerUser{
+    int32 socketDescriptor = 1;
+    int32 id = 2;
+    string name = 3;
+}
+
+message ClientUser {
+    int32 id = 1;
+    string name = 2;
+}
+
 message ChatMessage {
-    string userName = 1;
+    string sender = 1;
     string message = 2;
+}
+
+// message Room {
+//     int32 id = 1;
+//     string name = 2;
+//     bool hasPassword = 3;
+//     string password = 4;
+// }
+
+enum CommandType {
+    INVALID = 0;
+    HELP = 1;
+    NICKNAME = 2;
+    JOIN_ROOM = 3;
+    LEAVE_ROOM = 4;
+}
+
+message CommandRequest {
+    string request = 1;
+}
+message CommandResponse {
+    CommandType type = 1;
+    string response = 2;
 }
 
 enum MessageType {
     CHAT_MESSAGE = 0;
-    USER_JOIN = 1;
-    USER_LEAVE = 2;
+    USER_JOIN_ROOM = 1;
+    USER_LEAVE_ROOM = 2;
+    SETUP_USER = 3;
+    COMMAND = 4;
+}
+
+enum MessageSendType {
+    Unicast = 0;
+    Multicast = 1;
 }
 
 message Envelope {
-    MessageType type = 1;
-    bytes payload = 2;
+    MessageSendType sendType = 1;
+    MessageType type = 2;
+    bytes payload = 3;
 }
+
