@@ -1,14 +1,27 @@
 syntax = "proto3";
 
-message ServerUser{
-    int32 socketDescriptor = 1;
-    int32 id = 2;
-    string name = 3;
+
+//----------------------------------------------SERVER______ONLY----------------------------------------------
+message ServerConfig{
+    string address = 1;
+    int32 port = 2;
+    repeated Room rooms = 3;
 }
+
+message Room {
+    int32 id = 1;
+    string name = 2;
+    bool hasPassword = 3;
+    string password = 4;
+    int32 maxConnections = 5;
+}
+
+//----------------------------------------------CLIENT<--->SERVER----------------------------------------------
 
 message ClientUser {
     int32 id = 1;
     string name = 2;
+    int32 connectedRoomID = 3;
 }
 
 message ChatMessage {
@@ -16,23 +29,18 @@ message ChatMessage {
     string message = 2;
 }
 
-// message Room {
-//     int32 id = 1;
-//     string name = 2;
-//     bool hasPassword = 3;
-//     string password = 4;
-// }
-
 enum CommandType {
     INVALID = 0;
     HELP = 1;
     NICKNAME = 2;
     JOIN_ROOM = 3;
     LEAVE_ROOM = 4;
+    ROOM_LIST = 5;
 }
 
 message CommandRequest {
     string request = 1;
+    repeated string requestParameters = 2;
 }
 message CommandResponse {
     CommandType type = 1;
@@ -43,18 +51,17 @@ enum MessageType {
     CHAT_MESSAGE = 0;
     USER_JOIN_ROOM = 1;
     USER_LEAVE_ROOM = 2;
-    SETUP_USER = 3;
     COMMAND = 4;
 }
 
 enum MessageSendType {
-    Unicast = 0;
-    Multicast = 1;
+    LOCAL = 0; // send only to sender
+    WITHIN_ROOM = 1; // send to all users within room
+    WITHIN_ROOM_EXCEPT_THIS = 2; // send to all users within room except sender
+    GLOBAL = 3; // send to all users
 }
 
 message Envelope {
-    MessageSendType sendType = 1;
     MessageType type = 2;
     bytes payload = 3;
 }
-

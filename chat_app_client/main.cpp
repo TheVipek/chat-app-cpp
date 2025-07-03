@@ -72,28 +72,44 @@ void HandleInput() {
 		auto msg = GetChatMessage(currentInput, "[VISIBLE ONLY BY YOU]");
 		AddChatMessage(msg);
 		
+		std::istringstream iss(currentInput);
+		std::vector<std::string> words;
+		std::string word;
+		// The extraction operator (>>) reads whitespace-separated words
+		while (iss >> word) {
+			words.push_back(word);
+		}
+
 		Envelope envelope{};
 
 		envelope.set_type(MessageType::COMMAND);
-		envelope.set_sendtype(MessageSendType::Unicast);
 		CommandRequest cr{};
-		cr.set_request(currentInput);
+		cr.set_request(words[0]);
+
+		for (size_t i = 1; i < words.size(); ++i) {
+			cr.add_requestparameters(words[i]);
+		}
+
 		envelope.set_payload(cr.SerializeAsString());
 		SendToServer(envelope);
 	}
-	else 
+	else if(clientUser.id() != -1 && clientUser.connectedroomid() != -1)
 	{
 		auto msg = GetChatMessage(currentInput, clientUser.name());
 
 		Envelope envelope{};
 		envelope.set_type(MessageType::CHAT_MESSAGE);
-		envelope.set_sendtype(MessageSendType::Multicast);
 		envelope.set_payload(msg.SerializeAsString());
 
 		if (SendToServer(envelope))
 		{
 			AddChatMessage(msg);
 		}
+	}
+	else 
+	{
+		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", "[LOCAL]");
+		AddChatMessage(msg);
 	}
 
 
@@ -117,7 +133,7 @@ void UpdateChat() {
 
 		chatMutex.lock();
 		for (const auto& msg : chatHistory) {
-			message_elements.push_back(text(msg.sender() + ":" + msg.message()));
+			message_elements.push_back(paragraph(msg.sender() + ":" + msg.message()));
 		}
 		chatMutex.unlock();
 
@@ -197,11 +213,39 @@ void ListenForMessages(SOCKET clientSocket)
 					ChatMessage chatMessage = GetChatMessage("Set new nickname to: " + clientUser.name(), "[VISIBLE ONLY BY YOU]");
 					AddChatMessage(chatMessage);
 				}
+				else if (cres.type() == CommandType::JOIN_ROOM)
+				{
+					clientUser.ParseFromString(cres.response());
+					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
+				else if (cres.type() == CommandType::LEAVE_ROOM)
+				{
+					clientUser.ParseFromString(cres.response());
+					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
+				else if (cres.type() == CommandType::ROOM_LIST)
+				{
+					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
+					AddChatMessage(chatMessage);
+				}
 				else if (cres.type() == CommandType::INVALID)
 				{
 					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
 					AddChatMessage(chatMessage);
 				}
+				break;
+			}
+			case MessageType::USER_JOIN_ROOM:{
+				
+				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
+				AddChatMessage(chatMessage);
+				break;
+			}
+			case MessageType::USER_LEAVE_ROOM: {
+				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
+				AddChatMessage(chatMessage);
 				break;
 			}
 			default:
@@ -224,6 +268,7 @@ int main()
 	clientUser = ClientUser{};
 	clientUser.set_name("UserUnknown");
 	clientUser.set_id(-1);
+	clientUser.set_connectedroomid(-1);
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
 		chatMessage = GetChatMessage("WSAStartup failed", "[ERROR]");
