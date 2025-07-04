@@ -63,18 +63,20 @@ void AddChatMessage(ChatMessage message)
 }
 
 bool SendToServer(Envelope envelope) {
+	file_logger->info("Send To Server");
 	std::string serializedEnvelope = envelope.SerializeAsString();
 	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
 
 	if (sendResult == SOCKET_ERROR) {
 		if (LOGGING)
 		{
-			file_logger->error("send failed: " + std::to_string(WSAGetLastError()));
+			file_logger->error("Send to Server Failed error {}", WSAGetLastError());
 		}
 		EndProcess();
 		return false;
 	}
 
+	file_logger->info("Send Finish");
 	return true;
 }
 
@@ -84,6 +86,7 @@ void HandleInput() {
 
 	if (currentInput[0] == '/') // command
 	{
+		file_logger->info("Sending command");
 		auto msg = GetChatMessage(currentInput, "[ONLY YOU]");
 		AddChatMessage(msg);
 		
@@ -110,6 +113,7 @@ void HandleInput() {
 	}
 	else if(clientUser.id() != -1 && clientUser.connectedroomid() != -1)
 	{
+		file_logger->info("Send Chat Message");
 		auto msg = GetChatMessage(currentInput, clientUser.name());
 
 		Envelope envelope{};
@@ -123,6 +127,7 @@ void HandleInput() {
 	}
 	else 
 	{
+		file_logger->warn("Cannot send chat message");
 		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", "[ONLY YOU]");
 		AddChatMessage(msg);
 	}
@@ -134,7 +139,9 @@ void HandleInput() {
 void UpdateChat() {
 	auto message_component = Container::Vertical({});
 
-	Component input_component = Input(&currentInput, "Type your message here");
+
+	auto input_component = Input(&currentInput, "Type your message here");
+
 
 	auto main_component = Container::Vertical({
 		message_component,
@@ -198,6 +205,8 @@ void ListenForMessages(SOCKET clientSocket)
 		}
 		else {
 
+			file_logger->info("Message from server received");
+
 			Envelope envelope;
 			envelope.ParseFromString(buffer);
 
@@ -205,13 +214,17 @@ void ListenForMessages(SOCKET clientSocket)
 			{
 			case MessageType::CHAT_MESSAGE: 
 			{
+				file_logger->info("Received {}", std::to_string(MessageType::CHAT_MESSAGE));
 				ChatMessage chatMessage;
 				chatMessage.ParseFromString(envelope.payload());
 				AddChatMessage(chatMessage);
 				break;
 			}
-			case MessageType::USER_JOIN_ROOM || MessageType::USER_LEAVE_ROOM: 
+			case MessageType::USER_JOIN_ROOM:
+			case MessageType::USER_LEAVE_ROOM: 
 			{
+				file_logger->info("Received {} or {}", std::to_string(MessageType::USER_JOIN_ROOM), std::to_string(MessageType::USER_LEAVE_ROOM));
+
 
 				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
 				AddChatMessage(chatMessage);
@@ -219,12 +232,18 @@ void ListenForMessages(SOCKET clientSocket)
 			}
 			case MessageType::COMMAND: 
 			{
+				file_logger->info("Received command response");
+
 				CommandResponse cres;
 				cres.ParseFromString(envelope.payload());
 				switch (cres.type())
 				{
-				case CommandType::HELP || CommandType::ROOM_LIST || CommandType::INVALID: 
+				case CommandType::HELP:
+				case CommandType::ROOM_LIST:
+				case CommandType::INVALID: 
 				{
+					file_logger->info("Received {} or {} or {}", std::to_string(CommandType::HELP), std::to_string(CommandType::ROOM_LIST), std::to_string(CommandType::INVALID));
+
 					ChatMessage chatMessage = GetChatMessage(cres.response(), "[ONLY YOU]");
 					AddChatMessage(chatMessage);
 
@@ -232,6 +251,8 @@ void ListenForMessages(SOCKET clientSocket)
 				}
 				case CommandType::NICKNAME: 
 				{
+					file_logger->info("Received {}", std::to_string(CommandType::NICKNAME));
+
 					clientUser.ParseFromString(cres.response());
 
 					ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), "[ONLY YOU]");
@@ -241,6 +262,8 @@ void ListenForMessages(SOCKET clientSocket)
 				}
 				case CommandType::JOIN_ROOM:
 				{
+					file_logger->info("Received {}", std::to_string(CommandType::JOIN_ROOM));
+
 					clientUser.ParseFromString(cres.response());
 					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", "[ONLY YOU]");
 					AddChatMessage(chatMessage);
@@ -249,6 +272,8 @@ void ListenForMessages(SOCKET clientSocket)
 				}
 				case CommandType::LEAVE_ROOM:
 				{
+					file_logger->info("Received {}", std::to_string(CommandType::LEAVE_ROOM));
+
 					clientUser.ParseFromString(cres.response());
 					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", "[ONLY YOU]");
 					AddChatMessage(chatMessage);
@@ -271,6 +296,7 @@ void ListenForMessages(SOCKET clientSocket)
 int main()
 {
 	file_logger = spdlog::rotating_logger_mt("file_logger", "logs/logs.log", 1024 * 1024, 3);
+	file_logger->flush_on(spdlog::level::level_enum::info);
 	spdlog::set_default_logger(file_logger);
 
 	file_logger->info("-----------------------------------PROCESS START-----------------------------------");
@@ -302,7 +328,7 @@ int main()
 	{
 		if (LOGGING)
 		{
-			file_logger->error("Socket creation failed: " + WSAGetLastError());
+			file_logger->error("Socket creation failed: {}", WSAGetLastError());
 		}
 		WSACleanup();
 		return 1;
@@ -333,7 +359,7 @@ int main()
 
 	if (LOGGING) 
 	{
-		spdlog::info("Connection established!", SERVER_ADDRESS, SERVER_PORT);
+		file_logger->info("Connection established! address:{} port: {}", SERVER_ADDRESS, SERVER_PORT);
 	}
 	chatMessage = GetChatMessage("/help to see commands", "[ONLY YOU]");
 	AddChatMessage(chatMessage);

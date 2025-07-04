@@ -2,6 +2,8 @@
 
 void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server)
 {
+    file_logger->info("Leave Room Command Process");
+
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     MessageSendType sendType;
@@ -25,7 +27,7 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         std::string envelopeParsed;
         envelope.SerializeToString(&envelopeParsed);
 
-        printf("sending command response to client\n");
+        file_logger->info("Send to client");
         server->Send(envelope, sendType, senderSocket);
 
 
@@ -39,16 +41,17 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
 
         //remove old user
         roomContainer->RemoveUser(user);
+        file_logger->info("Removed user {} from room {}", user->name(), roomContainer->room->name());
         return;
     }
     
     sendType = MessageSendType::LOCAL;
     CommandResponse cres{};
-    printf("cannot use /leaveRoom\n");
+    file_logger->warn("Cannot use command");
     cres.set_response("Cannot use this command now.");
     cres.set_type(CommandType::INVALID);
     envelope.set_payload(cres.SerializeAsString());
 
-    printf("sending command response to client\n");
+    file_logger->info("Send to client");
     server->Send(envelope, sendType, senderSocket);
 }

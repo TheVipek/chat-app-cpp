@@ -4,18 +4,21 @@
 #include "ServerMessageHandler.h"
 
 
-Server::Server() {
+Server::Server(std::shared_ptr<spdlog::logger> _file_logger) {
+    file_logger = _file_logger;
     srand(time(0));
     connectedUsers = std::map<SOCKET, ClientUser*>();
     roomContainers = std::map<std::string, RoomContainer*>();
     initialized = false;
     this->maxConnections = MAX_CONNECTIONS;
-    serverMessageHandler = new ServerMessageHandler(this);
+    serverMessageHandler = new ServerMessageHandler(this, _file_logger);
 }
+
 Server::~Server() {
     delete(serverMessageHandler);
     delete(serverConfig);
 }
+
 bool Server::Initialize(ServerConfig* _serverConfig) {
     if (initialized)
         return false;
@@ -36,7 +39,7 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (serverSocket == INVALID_SOCKET) {
-        printf("Socket creation failed %d \n", WSAGetLastError());
+        file_logger->error("Socket creation failed {}", WSAGetLastError());
 
         WSACleanup();
         return false;
@@ -52,7 +55,7 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
 
         if (inet_pton(AF_INET, serverConfig->address().c_str(), &addr) == -1)
         {
-            printf("Invalid IPv4 address, setting as local \n");
+            file_logger->error("Invalid IPv4 address, setting as local");
 
             serverAddr.sin_addr.s_addr = INADDR_ANY; // local address ip
         }
@@ -64,16 +67,16 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
     serverAddr.sin_port = htons(serverConfig->port());
 
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        printf("Bind failed %d \n", WSAGetLastError());
+        file_logger->error("Bind failed {}", WSAGetLastError());
 
         closesocket(serverSocket);
         return false;
     }
 
-    printf("Server listening on port %d \n", serverConfig->port());
+    file_logger->info("Server listening on port {}", serverConfig->port());
 
     if (listen(serverSocket, maxConnections) == SOCKET_ERROR) {
-        printf("Listen failed: %d \n", WSAGetLastError());
+        file_logger->error("Listen failed: {}", WSAGetLastError());
         closesocket(serverSocket);
         return false;
     }
@@ -117,7 +120,7 @@ void Server::Run() {
         //i have no plans on testing it on linux
         if (select(0, &readSet, &writeSet, NULL, NULL) == SOCKET_ERROR)
         {
-            std::cerr << "select " << WSAGetLastError() << "\n";
+            file_logger->error("SELECT ERROR {}", WSAGetLastError());
             exit(1);
         }
 
@@ -132,7 +135,7 @@ void Server::Run() {
 
                 if ((newfd = accept(serverSocket, (sockaddr*)&clientAddr, &addrlen)) == INVALID_SOCKET)
                 {
-                    printf("accept %d \n", WSAGetLastError());
+                    file_logger->error("SOCKET ACCEPT ERROR {}", WSAGetLastError());
                 }
                 else
                 {
@@ -144,8 +147,7 @@ void Server::Run() {
                     fdmax = (newfd > fdmax) ? newfd : fdmax;
 
                     char ip[INET_ADDRSTRLEN];
-                    printf("selectserver: new connection from %s on "
-                        "socket %d\n", inet_ntop(AF_INET, &clientAddr.sin_addr, ip, sizeof(ip)), newfd);
+                    file_logger->info("New connection from {} on socket {} ", inet_ntop(AF_INET, &clientAddr.sin_addr, ip, sizeof(ip)), newfd);
                 }
             }
             //handle data from client
@@ -158,10 +160,10 @@ void Server::Run() {
                         if (receivedBytes == 0)
                         {
                             //no connection
-                            printf("selectserver: socket %d hung up\n", senderSocket);
+                            file_logger->error("Lost connection to socket? value {}", senderSocket);
                         }
                         else {
-                            printf("recv %d \n", WSAGetLastError());
+                            file_logger->error("Lost connection to socket? error {}", WSAGetLastError());
                         }
                         closesocket(senderSocket);
                         connectedUsers.erase(senderSocket);
@@ -190,7 +192,7 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
     {
         if (send(senderSocket, envelopeParsed.data(), envelopeParsed.size(), 0) == SOCKET_ERROR)
         {
-            std::cerr << "send " << WSAGetLastError() << "\n";
+            file_logger->error("Problem with sending data to socket {} error {} ", senderSocket , WSAGetLastError());
         }
     }
     else if (msgSendType == MessageSendType::WITHIN_ROOM)
@@ -209,7 +211,7 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
                 {
                     if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                     {
-                        printf("send %d \n", WSAGetLastError());
+                        file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
                     }
                 }
             }
@@ -230,7 +232,7 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
                 {
                     if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                     {
-                        printf("send %d \n", WSAGetLastError());
+                        file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
                     }
                 }
             }
@@ -247,7 +249,7 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
             {
                 if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                 {
-                    printf("send %d \n", WSAGetLastError());
+                    file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
                 }
             }
         }
@@ -255,14 +257,12 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
 }
 int Server::GetNewUserIdentifier() {
     int uniqueID = (rand() % 10000000);
-    printf("uniqueID: %d", uniqueID);
     while (true) {
         for (auto u : connectedUsers)
         {
             if (u.second->id() == uniqueID)
             {
                 uniqueID = (rand() % 1000000);
-                printf("new uniqueID: %d", uniqueID);
                 continue;
             }
         }

@@ -12,6 +12,7 @@ endif()
 
 project ("chat_app_server")
 find_package(Protobuf CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
@@ -27,6 +28,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config.json
 
 target_link_libraries(chat_app_server
     PRIVATE protobuf::libprotobuf
+    PRIVATE spdlog::spdlog
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

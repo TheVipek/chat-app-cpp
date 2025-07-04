@@ -5,12 +5,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include "Room/RoomContainer.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
 class ServerMessageHandler;
 
 class Server
 {
 public:
-	Server();
+	Server(std::shared_ptr<spdlog::logger> _file_logger);
 	~Server();
 	friend ServerMessageHandler;
 	bool Initialize(ServerConfig* serverConfig);
@@ -25,6 +28,7 @@ public:
 	std::vector<RoomContainer*> GetRoomContainers();
 	ClientUser* GetUser(SOCKET socket);
 protected:
+	std::shared_ptr<spdlog::logger> file_logger;
 	bool initialized;
 	SOCKET serverSocket;
 	sockaddr_in serverAddr;

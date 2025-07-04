@@ -2,6 +2,7 @@
 
 void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server)
 {
+    file_logger->info("Join Room Command Process");
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
 
@@ -13,7 +14,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     {
         sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
-        printf("invalid usage of joinRoom\n");
+        file_logger->warn("Invalid usage");
         cres.set_response("You need to /setnick first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -22,7 +23,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     {
         sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
-        printf("invalid usage of joinRoom\n");
+        file_logger->warn("Invalid usage");
         cres.set_response("You need to leave your current room first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -35,7 +36,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         {
             sendType = MessageSendType::LOCAL;
             CommandResponse cres{};
-            printf("invalid usage of joinRoom\n");
+            file_logger->warn("Invalid usage");
             cres.set_response("Invalid usage of /joinRoom (eg. /joinRoom #Lobby)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -63,9 +64,10 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
                 envelope.SerializeToString(&envelopeParsed);
 
 
-                printf("sending command response to client\n");
+                file_logger->info("Send to client");
                 server->Send(envelope, sendType, senderSocket);
                 roomContainer->AddUser(user);
+                file_logger->info("Add user {} to room {}", user->name(), roomContainer->room->name());
 
 
                 Envelope envelope2{};
@@ -82,7 +84,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
 
             sendType = MessageSendType::LOCAL;
             CommandResponse cres{};
-            printf("invalid usage of joinRoom\n");
+            file_logger->warn("Invalid usage");
             cres.set_response("Room doesn't exist.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());

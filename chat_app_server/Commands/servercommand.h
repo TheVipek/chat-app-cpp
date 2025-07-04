@@ -6,6 +6,12 @@
 class ServerCommand
 {
 public: 
-	ServerCommand() {};
+	ServerCommand(std::shared_ptr<spdlog::logger> _file_logger) 
+	{
+		file_logger = _file_logger;
+	};
 	virtual void Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server) = 0;
+protected:
+	std::shared_ptr<spdlog::logger> file_logger;
+
 };

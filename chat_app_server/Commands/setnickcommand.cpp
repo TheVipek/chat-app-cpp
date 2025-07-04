@@ -5,7 +5,7 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     MessageSendType sendType;
-
+    file_logger->info("Set Nick Command Process");
     if (creq.requestparameters().size() == 1)
     {
         std::string proposedUserName = creq.requestparameters()[0];
@@ -14,15 +14,13 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         {
             sendType = MessageSendType::LOCAL;
             CommandResponse cres{};
-            printf("invalid usage of setnick\n");
+            file_logger->warn("Invalid usage");
             cres.set_response("Invalid usage of /setnick (eg. /setnick SIGMA)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
         }
         else
         {
-            printf("setnick process\n");
-
             auto user = server->GetUser(senderSocket);
 
             if (user->id() == -1)
@@ -30,7 +28,8 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
                 user->set_id(server->GetNewUserIdentifier());
             }
 
-            printf("set proposed nickname: %s", proposedUserName.c_str());
+            file_logger->info("Set proposed nickname {}", proposedUserName.c_str());
+
             user->set_name(proposedUserName);
 
             sendType = MessageSendType::LOCAL;
@@ -46,7 +45,7 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         }
     }
     else {
-        printf("invalid usage of setnick\n");
+        file_logger->warn("Invalid usage");
 
         sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
@@ -55,6 +54,6 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         envelope.set_payload(cres.SerializeAsString());
     }
 
-    printf("sending command response to client\n");
+    file_logger->info("Send to client");
     server->Send(envelope, sendType, senderSocket);
 }

@@ -6,22 +6,24 @@
 #include "Commands/roomlistcommand.h"
 #include "Commands/leaveroomcommand.h"
 
-ServerMessageHandler::ServerMessageHandler(Server* _server) {
+ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdlog::logger> _file_logger) {
 	server = _server;
-
-    commands["/help"] = std::make_unique<HelpCommand>();
-    commands["/setnick"] = std::make_unique<SetNickCommand>();
-    commands["/joinRoom"] = std::make_unique<JoinRoomCommand>();
-    commands["/leaveRoom"] = std::make_unique<LeaveRoomCommand>();
-    commands["/roomList"] = std::make_unique<RoomListCommand>();
+    file_logger = _file_logger;
+    commands["/help"] = std::make_unique<HelpCommand>(_file_logger);
+    commands["/setnick"] = std::make_unique<SetNickCommand>(_file_logger);
+    commands["/joinRoom"] = std::make_unique<JoinRoomCommand>(_file_logger);
+    commands["/leaveRoom"] = std::make_unique<LeaveRoomCommand>(_file_logger);
+    commands["/roomList"] = std::make_unique<RoomListCommand>(_file_logger);
 }
 
 void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET senderSocket)
 {
+    file_logger->info("Handle Message for socket: {}", senderSocket);
     switch (envelope.type())
     {
         case MessageType::CHAT_MESSAGE:
         {
+
             std::string envelopeParsed;
             envelope.SerializeToString(&envelopeParsed);
 
@@ -29,7 +31,10 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
             auto user = server->GetUser(senderSocket);
             if (user->id() != -1 && user->connectedroomid() != -1)
             {
-                printf("handling chat message to users (%d)\n", server->writeSet.fd_count);
+                file_logger->info("Sending Chat Message from {} user", user->name());
+
+                int totallySendTo = 0;
+                
                 for (int j = 0; j < server->writeSet.fd_count; j++)
                 {
                     SOCKET dest = server->writeSet.fd_array[j];
@@ -42,17 +47,23 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
                         {
                             if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                             {
-                                printf("send %d \n", WSAGetLastError());
+                                file_logger->warn("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
+                            }
+                            else 
+                            {
+                                totallySendTo++;
                             }
                         }
                     }
                 }
+
+                file_logger->info("Sent to {} users", totallySendTo);
             }
             break;
         }
         case MessageType::COMMAND:
         {
-            printf("handling command\n");
+            file_logger->info("Handling command");
 
             if (FD_ISSET(senderSocket, &server->writeSet))
             {
@@ -67,7 +78,8 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
                 {
                     Envelope envelope{};
                     envelope.set_type(MessageType::COMMAND);
-                    printf("invalid command\n");
+                    file_logger->warn("Invalid command: {} from socket {}", req, senderSocket);
+
 
                     CommandResponse cres{};
                     cres.set_response("Invalid Command.");
