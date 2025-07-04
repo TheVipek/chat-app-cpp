@@ -15,7 +15,7 @@ find_package(Protobuf CONFIG REQUIRED)
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
-add_executable (chat_app_server "main.cpp" "Server.cpp" "Server.h" ${PROTO_SRCS} ${PROTO_HDRS} "ServerMessageHandler.h" "ServerMessageHandler.cpp" "Commands/command.h" "Commands/helpcommand.cpp" "Commands/helpcommand.h" "Commands/setnickcommand.h" "Commands/setnickcommand.cpp" "Commands/joinroomcommand.h" "Commands/joinroomcommand.cpp" "Commands/roomlistcommand.h" "Commands/roomlistcommand.cpp" "Commands/leaveroomcommand.h" "Commands/leaveroomcommand.cpp" "Room/RoomContainer.h" "Room/RoomContainer.cpp")
+add_executable (chat_app_server "main.cpp" "Server.cpp" "Server.h" ${PROTO_SRCS} ${PROTO_HDRS} "ServerMessageHandler.h" "ServerMessageHandler.cpp" "Commands/servercommand.h" "Commands/helpcommand.cpp" "Commands/helpcommand.h" "Commands/setnickcommand.h" "Commands/setnickcommand.cpp" "Commands/joinroomcommand.h" "Commands/joinroomcommand.cpp" "Commands/roomlistcommand.h" "Commands/roomlistcommand.cpp" "Commands/leaveroomcommand.h" "Commands/leaveroomcommand.cpp" "Room/RoomContainer.h" "Room/RoomContainer.cpp")
 
 target_include_directories(chat_app_server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}

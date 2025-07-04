@@ -1,9 +1,9 @@
 #pragma once
-#include "command.h"
+#include "servercommand.h"
 
-class SetNickCommand: public Command
+class SetNickCommand: public ServerCommand
 {
 public:
-	SetNickCommand() : Command() {};
+	SetNickCommand() : ServerCommand() {};
 	virtual void Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server) override;
 };

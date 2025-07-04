@@ -12,7 +12,7 @@ project ("chat_app_client")
 
 find_package(ftxui REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
-
+find_package(spdlog CONFIG REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
 add_executable (chat_app_client "main.cpp" ${PROTO_SRCS} ${PROTO_HDRS})
@@ -27,6 +27,7 @@ target_link_libraries(chat_app_client
     PRIVATE ftxui::dom
     PRIVATE ftxui::component
     PRIVATE protobuf::libprotobuf
+    PRIVATE spdlog::spdlog
 )
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET chat_app_client PROPERTY CXX_STANDARD 20)

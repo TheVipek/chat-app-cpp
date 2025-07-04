@@ -8,6 +8,9 @@
     },
     {
       "name": "protobuf"
+    },
+    {
+      "name": "spdlog"
     }
   ]
 }

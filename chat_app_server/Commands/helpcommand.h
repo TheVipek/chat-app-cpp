@@ -1,9 +1,9 @@
 #pragma once
-#include "command.h"
+#include "servercommand.h"
 
-class HelpCommand : public Command
+class HelpCommand : public ServerCommand
 {
 public:
-	HelpCommand() : Command() {};
+	HelpCommand() : ServerCommand() {};
 	virtual void Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server) override;
 };

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "command.h"
+#include "servercommand.h"
 
-class RoomListCommand : public Command
+class RoomListCommand : public ServerCommand
 {
 public:
-	RoomListCommand() : Command() {};
+	RoomListCommand() : ServerCommand() {};
 	virtual void Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server) override;
 };

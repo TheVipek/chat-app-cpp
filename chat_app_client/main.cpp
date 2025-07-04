@@ -7,7 +7,7 @@
 #include "ftxui/component/component.hpp"
 
 #include <stdio.h>  // for getchar
-#include <memory>                   // for allocator, shared_ptr
+#include <memory>                  
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iostream>
@@ -18,8 +18,13 @@
 #include <chrono>
 #include <cstdlib>
 #include <random>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
 #pragma comment(lib, "ws2_32.lib")
 
+
+#define LOGGING true
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 8080
 using namespace ftxui;
@@ -32,6 +37,14 @@ std::vector<ChatMessage> chatHistory;
 std::mutex chatMutex;
 std::thread uiThread;
 std::thread syncChatThread;
+std::shared_ptr<spdlog::logger> file_logger;
+
+void EndProcess()
+{
+	closesocket(clientSocket);
+	WSACleanup();
+	file_logger->info("-----------------------------------PROCESS END-----------------------------------");
+}
 
 ChatMessage GetChatMessage( std::string msg,  std::string sender)
 {
@@ -41,6 +54,7 @@ ChatMessage GetChatMessage( std::string msg,  std::string sender)
 
 	return chatMessage;
 }
+
 void AddChatMessage(ChatMessage message)
 {
 	chatMutex.lock();
@@ -53,10 +67,11 @@ bool SendToServer(Envelope envelope) {
 	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
 
 	if (sendResult == SOCKET_ERROR) {
-		auto chatMessage = GetChatMessage("send failed: " + std::to_string(WSAGetLastError()), "[ERROR]");
-		AddChatMessage(chatMessage);
-		closesocket(clientSocket);
-
+		if (LOGGING)
+		{
+			file_logger->error("send failed: " + std::to_string(WSAGetLastError()));
+		}
+		EndProcess();
 		return false;
 	}
 
@@ -69,7 +84,7 @@ void HandleInput() {
 
 	if (currentInput[0] == '/') // command
 	{
-		auto msg = GetChatMessage(currentInput, "[VISIBLE ONLY BY YOU]");
+		auto msg = GetChatMessage(currentInput, "[ONLY YOU]");
 		AddChatMessage(msg);
 		
 		std::istringstream iss(currentInput);
@@ -108,15 +123,13 @@ void HandleInput() {
 	}
 	else 
 	{
-		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", "[LOCAL]");
+		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", "[ONLY YOU]");
 		AddChatMessage(msg);
 	}
 
 
 	currentInput.clear();
 }
-
-
 
 void UpdateChat() {
 	auto message_component = Container::Vertical({});
@@ -167,9 +180,6 @@ void UpdateChat() {
 
 }
 
-
-
-
 void ListenForMessages(SOCKET clientSocket)
 {
 
@@ -178,8 +188,11 @@ void ListenForMessages(SOCKET clientSocket)
 		int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
 		if (receivedBytes <= 0) {
 			if (receivedBytes == 0) {
-				auto chatMessage = GetChatMessage("Server disconnected", "[ERROR]");
-				AddChatMessage(chatMessage);
+				if (LOGGING)
+				{
+					file_logger->error("Server disconnected");
+				}
+				EndProcess();
 				break;
 			}
 		}
@@ -190,97 +203,107 @@ void ListenForMessages(SOCKET clientSocket)
 
 			switch (envelope.type())
 			{
-			case MessageType::CHAT_MESSAGE: {
+			case MessageType::CHAT_MESSAGE: 
+			{
 				ChatMessage chatMessage;
 				chatMessage.ParseFromString(envelope.payload());
 				AddChatMessage(chatMessage);
 				break;
 			}
-			case MessageType::COMMAND: {
+			case MessageType::USER_JOIN_ROOM || MessageType::USER_LEAVE_ROOM: 
+			{
+
+				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
+				AddChatMessage(chatMessage);
+				break;
+			}
+			case MessageType::COMMAND: 
+			{
 				CommandResponse cres;
 				cres.ParseFromString(envelope.payload());
+				switch (cres.type())
+				{
+				case CommandType::HELP || CommandType::ROOM_LIST || CommandType::INVALID: 
+				{
+					ChatMessage chatMessage = GetChatMessage(cres.response(), "[ONLY YOU]");
+					AddChatMessage(chatMessage);
 
-				//in very simple way for now, just want to have it working correctly
-				if (cres.type() == CommandType::HELP)
-				{
-					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
-					AddChatMessage(chatMessage);
+					break;
 				}
-				else if (cres.type() == CommandType::NICKNAME)
+				case CommandType::NICKNAME: 
 				{
 					clientUser.ParseFromString(cres.response());
 
-					ChatMessage chatMessage = GetChatMessage("Set new nickname to: " + clientUser.name(), "[VISIBLE ONLY BY YOU]");
+					ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), "[ONLY YOU]");
 					AddChatMessage(chatMessage);
+
+					break;
 				}
-				else if (cres.type() == CommandType::JOIN_ROOM)
+				case CommandType::JOIN_ROOM:
 				{
 					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", "[VISIBLE ONLY BY YOU]");
+					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", "[ONLY YOU]");
 					AddChatMessage(chatMessage);
+
+					break;
 				}
-				else if (cres.type() == CommandType::LEAVE_ROOM)
+				case CommandType::LEAVE_ROOM:
 				{
 					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", "[VISIBLE ONLY BY YOU]");
+					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", "[ONLY YOU]");
 					AddChatMessage(chatMessage);
+
+					break;
 				}
-				else if (cres.type() == CommandType::ROOM_LIST)
-				{
-					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
-					AddChatMessage(chatMessage);
+				default:
+					break;
 				}
-				else if (cres.type() == CommandType::INVALID)
-				{
-					ChatMessage chatMessage = GetChatMessage(cres.response(), "[VISIBLE ONLY BY YOU]");
-					AddChatMessage(chatMessage);
-				}
-				break;
-			}
-			case MessageType::USER_JOIN_ROOM:{
-				
-				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
-				AddChatMessage(chatMessage);
-				break;
-			}
-			case MessageType::USER_LEAVE_ROOM: {
-				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
-				AddChatMessage(chatMessage);
-				break;
 			}
 			default:
 				break;
 			}
 		}
 	}
-
-	closesocket(clientSocket);
 }
+
+
 
 int main()
 {
+	file_logger = spdlog::rotating_logger_mt("file_logger", "logs/logs.log", 1024 * 1024, 3);
+	spdlog::set_default_logger(file_logger);
+
+	file_logger->info("-----------------------------------PROCESS START-----------------------------------");
+
+
 	uiThread = std::thread(UpdateChat);
 	uiThread.detach();
 
 	WSADATA wsaData;
 
 	ChatMessage chatMessage;
+
+	//create default user, its ID will be adjusted on /setnick command and room on /joinRoom or /leaveRoom
 	clientUser = ClientUser{};
 	clientUser.set_name("UserUnknown");
 	clientUser.set_id(-1);
 	clientUser.set_connectedroomid(-1);
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		chatMessage = GetChatMessage("WSAStartup failed", "[ERROR]");
-		AddChatMessage(chatMessage);
+		if (LOGGING)
+		{
+			file_logger->error("WSAStartup failed");
+		}
 		return 1;
 	}
 
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (clientSocket == INVALID_SOCKET)
 	{
-		chatMessage = GetChatMessage("Socket creation failed: " + WSAGetLastError(), "[ERROR]");
-		AddChatMessage(chatMessage);
+		if (LOGGING)
+		{
+			file_logger->error("Socket creation failed: " + WSAGetLastError());
+		}
 		WSACleanup();
 		return 1;
 	}
@@ -291,23 +314,28 @@ int main()
 	inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
 	serverAddr.sin_port = htons(SERVER_PORT);
 
-	chatMessage = GetChatMessage("Trying to connect to server...", "[INFO]");
-	AddChatMessage(chatMessage);
+	if (LOGGING)
+	{
+		file_logger->info("Trying to connect to server. address:{} port:{}", SERVER_ADDRESS, SERVER_PORT);
+	}
 
 	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
 
 	if (returnCall == SOCKET_ERROR)
 	{
-		chatMessage = GetChatMessage("Connection error", "[ERROR]");
-		AddChatMessage(chatMessage);
-		closesocket(clientSocket);
-		WSACleanup();
+		if (LOGGING)
+		{
+			file_logger->error("Connection error return call: {} socketVal: {}", returnCall, clientSocket);
+		}
+		EndProcess();
 		return 1;
 	}
 
-	chatMessage = GetChatMessage("Connection established!", "[INFO]");
-	AddChatMessage(chatMessage);
-	chatMessage = GetChatMessage("Welcome on the server! (/help to see commands)", "[INFO]");
+	if (LOGGING) 
+	{
+		spdlog::info("Connection established!", SERVER_ADDRESS, SERVER_PORT);
+	}
+	chatMessage = GetChatMessage("/help to see commands", "[ONLY YOU]");
 	AddChatMessage(chatMessage);
 
 
@@ -315,7 +343,6 @@ int main()
 	syncChatThread = std::thread(ListenForMessages, clientSocket);
 	syncChatThread.join();
 
-	WSACleanup();
 	return 1;
 }
 
