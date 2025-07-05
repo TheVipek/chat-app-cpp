@@ -165,6 +165,25 @@ void Server::Run() {
                         else {
                             file_logger->error("Lost connection to socket? error {}", WSAGetLastError());
                         }
+
+
+                        auto user = connectedUsers[senderSocket];
+                        if (user->connectedroomid() != -1)
+                        {
+                            //i will create more advanced handling for server if needed in future
+                            Envelope envelope2{};
+                            envelope2.set_type(MessageType::USER_LEAVE_ROOM);
+                            std::string msg = user->name() + "has been kicked from the server due to network error.";
+                            envelope2.set_payload(msg);
+                            Send(envelope2, MessageSendType::WITHIN_ROOM_EXCEPT_THIS, senderSocket);
+
+                            auto roomContainer = GetRoomContainer(user->connectedroomid());
+                            roomContainer->RemoveUser(user);
+
+                        }
+
+                        
+
                         closesocket(senderSocket);
                         connectedUsers.erase(senderSocket);
                     }
