@@ -6,6 +6,7 @@
 #include "ftxui/screen/color.hpp"  // for ftxui
 #include "ftxui/component/component.hpp"
 
+
 #include <stdio.h>  // for getchar
 #include <memory>                  
 #include <winsock2.h>
@@ -20,6 +21,7 @@
 #include <random>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include <ctime>;
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -28,16 +30,23 @@
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 8080
 using namespace ftxui;
+class ClientChatMessage
+{
+public:
+	time_t receiveTime;
+	ChatMessage chatMessage;
+};
 
 SOCKET clientSocket;
 std::string currentInput;
 ClientUser clientUser;
-std::vector<ChatMessage> chatHistory;
+std::vector<ClientChatMessage> chatHistory;
 
 std::mutex chatMutex;
 std::thread uiThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
+
 
 void EndProcess()
 {
@@ -58,7 +67,13 @@ ChatMessage GetChatMessage( std::string msg,  std::string sender)
 void AddChatMessage(ChatMessage message)
 {
 	chatMutex.lock();
-	chatHistory.push_back(message);
+	ClientChatMessage clientChatMessage;
+	time_t timestamp;
+	time(&timestamp);
+
+	clientChatMessage.receiveTime = timestamp;
+	clientChatMessage.chatMessage = message;
+	chatHistory.push_back(clientChatMessage);
 	chatMutex.unlock();
 }
 
@@ -136,32 +151,53 @@ void HandleInput() {
 	currentInput.clear();
 }
 
-void UpdateChat() {
-	auto message_component = Container::Vertical({});
+float scroll_y = 0.1;
 
+void UpdateChat() {
 
 	auto input_component = Input(&currentInput, "Type your message here");
 
-
-	auto main_component = Container::Vertical({
-		message_component,
-		input_component
-		});
-
-	auto main_renderer = Renderer(main_component, [&] {
+	auto textContent = Renderer([=] {
 		Elements message_elements;
 
 		chatMutex.lock();
 		for (const auto& msg : chatHistory) {
-			message_elements.push_back(paragraph(msg.sender() + ":" + msg.message()));
+
+			char timeString[std::size("yyyy-mm-ddThh:mm:ssZ")];
+			std::strftime(std::data(timeString), std::size(timeString),
+				"%F %T", std::gmtime(&msg.receiveTime));
+
+			std::string s = "[" + std::string(timeString) + "]" + msg.chatMessage.sender() + ":" + msg.chatMessage.message();
+			message_elements.push_back(paragraph(s));
 		}
 		chatMutex.unlock();
 
+		return vbox(message_elements) | focusPositionRelative(0, scroll_y) | frame | flex;
+		});
+
+	SliderOption<float> option_y;
+	option_y.value = &scroll_y;
+	option_y.min = 0.f;
+	option_y.max = 1.f;
+	option_y.increment = 0.01f;
+	option_y.direction = Direction::Down;
+	option_y.color_active = Color::Yellow;
+	option_y.color_inactive = Color::YellowLight;
+	auto scrollbar_y = Slider(option_y);
+
+	auto main_component = Container::Vertical({
+		Container::Horizontal({
+			  textContent,
+			  scrollbar_y,
+		  }) | border | flex,
+		input_component | border
+		});
+
+
+	auto main_renderer = Renderer(main_component, [&] {
 		return vbox({
-			vbox(message_elements) | flex,
-			separator(),
-			hbox({ input_component->Render() }) | border
-			}) | border | flex;
+			main_component->Render()
+			});
 		});
 
 	auto component = CatchEvent(main_renderer, [&](Event event) {
@@ -320,7 +356,7 @@ int main()
 		{
 			file_logger->error("WSAStartup failed");
 		}
-		return 1;
+		return 0;
 	}
 
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -331,7 +367,7 @@ int main()
 			file_logger->error("Socket creation failed: {}", WSAGetLastError());
 		}
 		WSACleanup();
-		return 1;
+		return 0;
 	}
 
 
@@ -354,7 +390,7 @@ int main()
 			file_logger->error("Connection error return call: {} socketVal: {}", returnCall, clientSocket);
 		}
 		EndProcess();
-		return 1;
+		return 0;
 	}
 
 	if (LOGGING) 
@@ -369,7 +405,7 @@ int main()
 	syncChatThread = std::thread(ListenForMessages, clientSocket);
 	syncChatThread.join();
 
-	return 1;
+	return 0;
 }
 
 
