@@ -88,6 +88,20 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
             return;
         }
 
+        if (roomContainer->usersInRoom.size() >= roomContainer->room->maxconnections())
+        {
+            sendType = MessageSendType::LOCAL;
+            CommandResponse cres{};
+            file_logger->warn("Cannot join, room has reached max capacity.");
+            cres.set_response("Cannot join, room has reached max capacity.");
+            cres.set_type(CommandType::INVALID);
+            envelope.set_payload(cres.SerializeAsString());
+
+            server->Send(envelope, sendType, senderSocket);
+
+            return;
+        }
+
 
         user->set_connectedroomid(roomContainer->room->id());
 
@@ -194,6 +208,20 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
             CommandResponse cres{};
             file_logger->warn("Invalid password");
             cres.set_response("Invalid password");
+            cres.set_type(CommandType::INVALID);
+            envelope.set_payload(cres.SerializeAsString());
+
+            server->Send(envelope, sendType, senderSocket);
+
+            return;
+        }
+
+        if (roomContainer->usersInRoom.size() >= roomContainer->room->maxconnections())
+        {
+            sendType = MessageSendType::LOCAL;
+            CommandResponse cres{};
+            file_logger->warn("Cannot join, room has reached max capacity.");
+            cres.set_response("Cannot join, room has reached max capacity.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
 

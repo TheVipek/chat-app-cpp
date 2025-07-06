@@ -41,6 +41,8 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
 
         //remove old user
         roomContainer->RemoveUser(user);
+        //override old user
+        user->set_connectedroomid(-1);
         file_logger->info("Removed user {} from room {}", user->name(), roomContainer->room->name());
         return;
     }

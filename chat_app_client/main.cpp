@@ -151,7 +151,7 @@ void HandleInput() {
 	currentInput.clear();
 }
 
-float scroll_y = 0.1;
+float scroll_y = 1.f;
 
 void UpdateChat() {
 

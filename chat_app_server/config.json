@@ -7,14 +7,14 @@
             "name": "#Lobby",
             "hasPassword": false,
             "password": "",
-            "maxConnections": 100
+            "maxConnections": 0
         },
         {
             "id": 102,
             "name": "#PrivateMeeting",
             "hasPassword": true,
             "password": "securePass123",
-            "maxConnections": 4
+            "maxConnections": 0
         },
         {
             "id": 103,
