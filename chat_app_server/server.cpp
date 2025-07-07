@@ -106,8 +106,8 @@ void Server::PingClients() {
 
     std::vector<SOCKET> socketsToRemove;
 
-    for (int i = 0; i < readSet.fd_count; i++) {
-        SOCKET soc = readSet.fd_array[i];
+    for (int i = 0; i < writeSet.fd_count; i++) {
+        SOCKET soc = writeSet.fd_array[i];
         if (now - lastPingTime[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
             file_logger->info("Ping socket {}", soc);
             bool failed = Send(ping_envelope, MessageSendType::LOCAL, soc).size() > 0;
