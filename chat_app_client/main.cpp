@@ -5,8 +5,9 @@
 #include "ftxui/dom/node.hpp"      // for Render
 #include "ftxui/screen/color.hpp"  // for ftxui
 #include "ftxui/component/component.hpp"
-
-
+#include <google/protobuf/util/json_util.h>
+#include <fstream>
+#include <string>
 #include <stdio.h>  // for getchar
 #include <memory>                  
 #include <winsock2.h>
@@ -27,8 +28,6 @@
 
 
 #define LOGGING true
-#define SERVER_ADDRESS "127.0.0.1"
-#define SERVER_PORT 8080
 using namespace ftxui;
 class ClientChatMessage
 {
@@ -42,12 +41,14 @@ std::string currentInput;
 ClientUser clientUser;
 std::vector<ClientChatMessage> chatHistory;
 int pingTimeoutSeconds = 5;
+int timeoutTries = 3;
 std::chrono::steady_clock::time_point lastPingTime;
 std::mutex chatMutex;
 std::thread uiThread;
 std::thread pingThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
+float scroll_y = 1.f;
 
 
 void EndProcess()
@@ -153,8 +154,6 @@ void HandleInput() {
 	currentInput.clear();
 }
 
-float scroll_y = 1.f;
-
 void UpdateChat() {
 
 	auto input_component = Input(&currentInput, "Type your message here");
@@ -230,18 +229,25 @@ void ListenForMessages(SOCKET clientSocket)
 
 	while (true) {
 
+		int leftTries = timeoutTries;
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(clientSocket, &readSet);
+		timeval timeout{ .tv_sec = pingTimeoutSeconds, .tv_usec = 0 };
+		int ready = select(clientSocket + 1, &readSet, nullptr, nullptr, &timeout);
 		char buffer[256];
-		int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
-		if (receivedBytes <= 0) {
-			if (LOGGING)
-			{
+		if (ready > 0 && FD_ISSET(clientSocket, &readSet))
+		{
+			int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
+			if (receivedBytes <= 0) {
 				file_logger->warn("recv bytes: {}", receivedBytes);
-				file_logger->error("Server disconnected");
+				if (LOGGING)
+				{
+					file_logger->error("Server disconnected");
+				}
+				EndProcess();
+				break;
 			}
-			EndProcess();
-			break;
-		}
-		else {
 
 			file_logger->info("Message from server received");
 
@@ -250,7 +256,7 @@ void ListenForMessages(SOCKET clientSocket)
 
 			switch (envelope.type())
 			{
-			case MessageType::CHAT_MESSAGE: 
+			case MessageType::CHAT_MESSAGE:
 			{
 				file_logger->info("Received {}", std::to_string(MessageType::CHAT_MESSAGE));
 				ChatMessage chatMessage;
@@ -259,7 +265,7 @@ void ListenForMessages(SOCKET clientSocket)
 				break;
 			}
 			case MessageType::USER_JOIN_ROOM:
-			case MessageType::USER_LEAVE_ROOM: 
+			case MessageType::USER_LEAVE_ROOM:
 			{
 				file_logger->info("Received {} or {}", std::to_string(MessageType::USER_JOIN_ROOM), std::to_string(MessageType::USER_LEAVE_ROOM));
 
@@ -274,7 +280,7 @@ void ListenForMessages(SOCKET clientSocket)
 				lastPingTime = std::chrono::steady_clock::now();
 				break;
 			}
-			case MessageType::COMMAND: 
+			case MessageType::COMMAND:
 			{
 				file_logger->info("Received command response");
 
@@ -284,7 +290,7 @@ void ListenForMessages(SOCKET clientSocket)
 				{
 				case CommandType::HELP:
 				case CommandType::ROOM_LIST:
-				case CommandType::INVALID: 
+				case CommandType::INVALID:
 				{
 					file_logger->info("Received {} or {} or {}", std::to_string(CommandType::HELP), std::to_string(CommandType::ROOM_LIST), std::to_string(CommandType::INVALID));
 
@@ -293,7 +299,7 @@ void ListenForMessages(SOCKET clientSocket)
 
 					break;
 				}
-				case CommandType::NICKNAME: 
+				case CommandType::NICKNAME:
 				{
 					file_logger->info("Received {}", std::to_string(CommandType::NICKNAME));
 
@@ -331,7 +337,7 @@ void ListenForMessages(SOCKET clientSocket)
 			default:
 				break;
 			}
-		
+
 			auto now = std::chrono::steady_clock::now();
 			if (now - lastPingTime > std::chrono::seconds(pingTimeoutSeconds))
 			{
@@ -344,6 +350,22 @@ void ListenForMessages(SOCKET clientSocket)
 				break;
 			}
 		}
+		else if (ready == 0) // no data, timeout occured
+		{
+			if (leftTries == 0)
+			{
+				if (LOGGING)
+				{
+					file_logger->error("Server disconnected");
+				}
+				EndProcess();
+				break;
+			}
+			file_logger->error("Select timeout has occured, retrying...");
+			AddChatMessage(GetChatMessage("Server timeout, retrying...", "[ONLY YOU]"));
+			leftTries--;
+			continue;
+		}
 	}
 }
 
@@ -355,11 +377,31 @@ int main()
 
 	file_logger->info("-----------------------------------PROCESS START-----------------------------------");
 
+	std::string json_config_file_path = "config.json";
+	std::ifstream config_file(json_config_file_path);
+	if (!config_file.is_open()) {
+		file_logger->error("Error: Could not open config file: " + json_config_file_path);
+		return 1;
+	}
+
+	std::string json_content((std::istreambuf_iterator<char>(config_file)),
+		std::istreambuf_iterator<char>());
+	config_file.close();
+
+	SimpleServerConfig* serverConfig = new SimpleServerConfig();
+	google::protobuf::util::JsonStringToMessage(json_content, serverConfig);
+
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+		if (LOGGING)
+		{
+			file_logger->error("WSAStartup failed");
+		}
+		return 0;
+	}
 
 	uiThread = std::thread(UpdateChat);
 	uiThread.detach();
-
-	WSADATA wsaData;
 
 	ChatMessage chatMessage;
 
@@ -369,13 +411,6 @@ int main()
 	clientUser.set_id(-1);
 	clientUser.set_connectedroomid(-1);
 
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		if (LOGGING)
-		{
-			file_logger->error("WSAStartup failed");
-		}
-		return 0;
-	}
 
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (clientSocket == INVALID_SOCKET)
@@ -391,12 +426,12 @@ int main()
 
 	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;
-	inet_pton(AF_INET, SERVER_ADDRESS, &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(SERVER_PORT);
+	inet_pton(AF_INET, serverConfig->address().c_str(), &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(serverConfig->port());
 
 	if (LOGGING)
 	{
-		file_logger->info("Trying to connect to server. address:{} port:{}", SERVER_ADDRESS, SERVER_PORT);
+		file_logger->info("Trying to connect to server. address:{} port:{}", serverConfig->address(), serverConfig->port());
 	}
 
 	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
@@ -413,7 +448,7 @@ int main()
 
 	if (LOGGING) 
 	{
-		file_logger->info("Connection established! address:{} port: {}", SERVER_ADDRESS, SERVER_PORT);
+		file_logger->info("Connection established! address:{} port: {}", serverConfig->address(), serverConfig->port());
 	}
 	chatMessage = GetChatMessage("/help to see commands", "[ONLY YOU]");
 	AddChatMessage(chatMessage);

@@ -2,10 +2,9 @@ syntax = "proto3";
 
 
 //----------------------------------------------SERVER______ONLY----------------------------------------------
-message ServerConfig{
-    string address = 1;
-    int32 port = 2;
-    repeated Room rooms = 3;
+message AdvancedServerConfig{
+    SimpleServerConfig server = 1;
+    repeated Room rooms = 2;
 }
 
 message Room {
@@ -17,6 +16,12 @@ message Room {
 }
 
 //----------------------------------------------CLIENT<--->SERVER----------------------------------------------
+
+message SimpleServerConfig
+{
+    string address = 1;
+    int32 port = 2;
+}
 
 message ClientUser {
     int32 id = 1;

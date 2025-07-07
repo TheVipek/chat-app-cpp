@@ -16,7 +16,7 @@ public:
 	Server(std::shared_ptr<spdlog::logger> _file_logger);
 	~Server();
 	friend ServerMessageHandler;
-	bool Initialize(ServerConfig* serverConfig);
+	bool Initialize(AdvancedServerConfig* serverConfig);
 	bool IsInitialized();
 	void Run();
 	void Stop();
@@ -34,7 +34,7 @@ protected:
 	sockaddr_in serverAddr;
 	int maxConnections;
 	
-	ServerConfig* serverConfig;
+	AdvancedServerConfig* serverConfig;
 	ServerMessageHandler* serverMessageHandler;
 	std::map<SOCKET, ClientUser*> connectedUsers;
 	std::map<std::string, RoomContainer*> roomContainers;

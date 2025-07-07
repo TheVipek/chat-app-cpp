@@ -52,6 +52,9 @@ struct TableStruct_communication_2eproto {
 };
 extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_communication_2eproto;
+class AdvancedServerConfig;
+struct AdvancedServerConfigDefaultTypeInternal;
+extern AdvancedServerConfigDefaultTypeInternal _AdvancedServerConfig_default_instance_;
 class ChatMessage;
 struct ChatMessageDefaultTypeInternal;
 extern ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
@@ -70,9 +73,9 @@ extern EnvelopeDefaultTypeInternal _Envelope_default_instance_;
 class Room;
 struct RoomDefaultTypeInternal;
 extern RoomDefaultTypeInternal _Room_default_instance_;
-class ServerConfig;
-struct ServerConfigDefaultTypeInternal;
-extern ServerConfigDefaultTypeInternal _ServerConfig_default_instance_;
+class SimpleServerConfig;
+struct SimpleServerConfigDefaultTypeInternal;
+extern SimpleServerConfigDefaultTypeInternal _SimpleServerConfig_default_instance_;
 namespace google {
 namespace protobuf {
 }  // namespace protobuf
@@ -190,6 +193,214 @@ inline bool MessageSendType_Parse(absl::string_view name, MessageSendType* value
 // ===================================================================
 
 
+// -------------------------------------------------------------------
+
+class SimpleServerConfig final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:SimpleServerConfig) */ {
+ public:
+  inline SimpleServerConfig() : SimpleServerConfig(nullptr) {}
+  ~SimpleServerConfig() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(SimpleServerConfig* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(SimpleServerConfig));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR SimpleServerConfig(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline SimpleServerConfig(const SimpleServerConfig& from) : SimpleServerConfig(nullptr, from) {}
+  inline SimpleServerConfig(SimpleServerConfig&& from) noexcept
+      : SimpleServerConfig(nullptr, std::move(from)) {}
+  inline SimpleServerConfig& operator=(const SimpleServerConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SimpleServerConfig& operator=(SimpleServerConfig&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const SimpleServerConfig& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const SimpleServerConfig* internal_default_instance() {
+    return reinterpret_cast<const SimpleServerConfig*>(
+        &_SimpleServerConfig_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 2;
+  friend void swap(SimpleServerConfig& a, SimpleServerConfig& b) { a.Swap(&b); }
+  inline void Swap(SimpleServerConfig* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SimpleServerConfig* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  SimpleServerConfig* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<SimpleServerConfig>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const SimpleServerConfig& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const SimpleServerConfig& from) { SimpleServerConfig::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(SimpleServerConfig* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "SimpleServerConfig"; }
+
+ protected:
+  explicit SimpleServerConfig(::google::protobuf::Arena* arena);
+  SimpleServerConfig(::google::protobuf::Arena* arena, const SimpleServerConfig& from);
+  SimpleServerConfig(::google::protobuf::Arena* arena, SimpleServerConfig&& from) noexcept
+      : SimpleServerConfig(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kAddressFieldNumber = 1,
+    kPortFieldNumber = 2,
+  };
+  // string address = 1;
+  void clear_address() ;
+  const std::string& address() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_address(Arg_&& arg, Args_... args);
+  std::string* mutable_address();
+  PROTOBUF_NODISCARD std::string* release_address();
+  void set_allocated_address(std::string* value);
+
+  private:
+  const std::string& _internal_address() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_address(
+      const std::string& value);
+  std::string* _internal_mutable_address();
+
+  public:
+  // int32 port = 2;
+  void clear_port() ;
+  ::int32_t port() const;
+  void set_port(::int32_t value);
+
+  private:
+  ::int32_t _internal_port() const;
+  void _internal_set_port(::int32_t value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:SimpleServerConfig)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      34, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const SimpleServerConfig& from_msg);
+    ::google::protobuf::internal::ArenaStringPtr address_;
+    ::int32_t port_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_communication_2eproto;
+};
 // -------------------------------------------------------------------
 
 class Room final : public ::google::protobuf::Message
@@ -501,7 +712,7 @@ class Envelope final : public ::google::protobuf::Message
     return reinterpret_cast<const Envelope*>(
         &_Envelope_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 6;
+  static constexpr int kIndexInFileMessages = 7;
   friend void swap(Envelope& a, Envelope& b) { a.Swap(&b); }
   inline void Swap(Envelope* other) {
     if (other == this) return;
@@ -709,7 +920,7 @@ class CommandResponse final : public ::google::protobuf::Message
     return reinterpret_cast<const CommandResponse*>(
         &_CommandResponse_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 5;
+  static constexpr int kIndexInFileMessages = 6;
   friend void swap(CommandResponse& a, CommandResponse& b) { a.Swap(&b); }
   inline void Swap(CommandResponse* other) {
     if (other == this) return;
@@ -917,7 +1128,7 @@ class CommandRequest final : public ::google::protobuf::Message
     return reinterpret_cast<const CommandRequest*>(
         &_CommandRequest_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 4;
+  static constexpr int kIndexInFileMessages = 5;
   friend void swap(CommandRequest& a, CommandRequest& b) { a.Swap(&b); }
   inline void Swap(CommandRequest* other) {
     if (other == this) return;
@@ -1137,7 +1348,7 @@ class ClientUser final : public ::google::protobuf::Message
     return reinterpret_cast<const ClientUser*>(
         &_ClientUser_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 2;
+  static constexpr int kIndexInFileMessages = 3;
   friend void swap(ClientUser& a, ClientUser& b) { a.Swap(&b); }
   inline void Swap(ClientUser* other) {
     if (other == this) return;
@@ -1357,7 +1568,7 @@ class ChatMessage final : public ::google::protobuf::Message
     return reinterpret_cast<const ChatMessage*>(
         &_ChatMessage_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 3;
+  static constexpr int kIndexInFileMessages = 4;
   friend void swap(ChatMessage& a, ChatMessage& b) { a.Swap(&b); }
   inline void Swap(ChatMessage* other) {
     if (other == this) return;
@@ -1512,31 +1723,31 @@ class ChatMessage final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class ServerConfig final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:ServerConfig) */ {
+class AdvancedServerConfig final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:AdvancedServerConfig) */ {
  public:
-  inline ServerConfig() : ServerConfig(nullptr) {}
-  ~ServerConfig() PROTOBUF_FINAL;
+  inline AdvancedServerConfig() : AdvancedServerConfig(nullptr) {}
+  ~AdvancedServerConfig() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ServerConfig* msg, std::destroying_delete_t) {
+  void operator delete(AdvancedServerConfig* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(ServerConfig));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(AdvancedServerConfig));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ServerConfig(
+  explicit PROTOBUF_CONSTEXPR AdvancedServerConfig(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline ServerConfig(const ServerConfig& from) : ServerConfig(nullptr, from) {}
-  inline ServerConfig(ServerConfig&& from) noexcept
-      : ServerConfig(nullptr, std::move(from)) {}
-  inline ServerConfig& operator=(const ServerConfig& from) {
+  inline AdvancedServerConfig(const AdvancedServerConfig& from) : AdvancedServerConfig(nullptr, from) {}
+  inline AdvancedServerConfig(AdvancedServerConfig&& from) noexcept
+      : AdvancedServerConfig(nullptr, std::move(from)) {}
+  inline AdvancedServerConfig& operator=(const AdvancedServerConfig& from) {
     CopyFrom(from);
     return *this;
   }
-  inline ServerConfig& operator=(ServerConfig&& from) noexcept {
+  inline AdvancedServerConfig& operator=(AdvancedServerConfig&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -1564,16 +1775,16 @@ class ServerConfig final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const ServerConfig& default_instance() {
+  static const AdvancedServerConfig& default_instance() {
     return *internal_default_instance();
   }
-  static inline const ServerConfig* internal_default_instance() {
-    return reinterpret_cast<const ServerConfig*>(
-        &_ServerConfig_default_instance_);
+  static inline const AdvancedServerConfig* internal_default_instance() {
+    return reinterpret_cast<const AdvancedServerConfig*>(
+        &_AdvancedServerConfig_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
-  friend void swap(ServerConfig& a, ServerConfig& b) { a.Swap(&b); }
-  inline void Swap(ServerConfig* other) {
+  friend void swap(AdvancedServerConfig& a, AdvancedServerConfig& b) { a.Swap(&b); }
+  inline void Swap(AdvancedServerConfig* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -1581,7 +1792,7 @@ class ServerConfig final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(ServerConfig* other) {
+  void UnsafeArenaSwap(AdvancedServerConfig* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1589,13 +1800,13 @@ class ServerConfig final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  ServerConfig* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ServerConfig>(arena);
+  AdvancedServerConfig* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<AdvancedServerConfig>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const ServerConfig& from);
+  void CopyFrom(const AdvancedServerConfig& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const ServerConfig& from) { ServerConfig::MergeImpl(*this, from); }
+  void MergeFrom(const AdvancedServerConfig& from) { AdvancedServerConfig::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -1632,18 +1843,18 @@ class ServerConfig final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(ServerConfig* other);
+  void InternalSwap(AdvancedServerConfig* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "ServerConfig"; }
+  static ::absl::string_view FullMessageName() { return "AdvancedServerConfig"; }
 
  protected:
-  explicit ServerConfig(::google::protobuf::Arena* arena);
-  ServerConfig(::google::protobuf::Arena* arena, const ServerConfig& from);
-  ServerConfig(::google::protobuf::Arena* arena, ServerConfig&& from) noexcept
-      : ServerConfig(arena) {
+  explicit AdvancedServerConfig(::google::protobuf::Arena* arena);
+  AdvancedServerConfig(::google::protobuf::Arena* arena, const AdvancedServerConfig& from);
+  AdvancedServerConfig(::google::protobuf::Arena* arena, AdvancedServerConfig&& from) noexcept
+      : AdvancedServerConfig(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -1658,11 +1869,10 @@ class ServerConfig final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kRoomsFieldNumber = 3,
-    kAddressFieldNumber = 1,
-    kPortFieldNumber = 2,
+    kRoomsFieldNumber = 2,
+    kServerFieldNumber = 1,
   };
-  // repeated .Room rooms = 3;
+  // repeated .Room rooms = 2;
   int rooms_size() const;
   private:
   int _internal_rooms_size() const;
@@ -1679,39 +1889,28 @@ class ServerConfig final : public ::google::protobuf::Message
   const ::Room& rooms(int index) const;
   ::Room* add_rooms();
   const ::google::protobuf::RepeatedPtrField<::Room>& rooms() const;
-  // string address = 1;
-  void clear_address() ;
-  const std::string& address() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_address(Arg_&& arg, Args_... args);
-  std::string* mutable_address();
-  PROTOBUF_NODISCARD std::string* release_address();
-  void set_allocated_address(std::string* value);
+  // .SimpleServerConfig server = 1;
+  bool has_server() const;
+  void clear_server() ;
+  const ::SimpleServerConfig& server() const;
+  PROTOBUF_NODISCARD ::SimpleServerConfig* release_server();
+  ::SimpleServerConfig* mutable_server();
+  void set_allocated_server(::SimpleServerConfig* value);
+  void unsafe_arena_set_allocated_server(::SimpleServerConfig* value);
+  ::SimpleServerConfig* unsafe_arena_release_server();
 
   private:
-  const std::string& _internal_address() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_address(
-      const std::string& value);
-  std::string* _internal_mutable_address();
+  const ::SimpleServerConfig& _internal_server() const;
+  ::SimpleServerConfig* _internal_mutable_server();
 
   public:
-  // int32 port = 2;
-  void clear_port() ;
-  ::int32_t port() const;
-  void set_port(::int32_t value);
-
-  private:
-  ::int32_t _internal_port() const;
-  void _internal_set_port(::int32_t value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:ServerConfig)
+  // @@protoc_insertion_point(class_scope:AdvancedServerConfig)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
-      28, 2>
+      1, 2, 2,
+      0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1727,11 +1926,11 @@ class ServerConfig final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const ServerConfig& from_msg);
-    ::google::protobuf::RepeatedPtrField< ::Room > rooms_;
-    ::google::protobuf::internal::ArenaStringPtr address_;
-    ::int32_t port_;
+                          const AdvancedServerConfig& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::Room > rooms_;
+    ::SimpleServerConfig* server_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1752,123 +1951,149 @@ class ServerConfig final : public ::google::protobuf::Message
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
-// ServerConfig
+// AdvancedServerConfig
 
-// string address = 1;
-inline void ServerConfig::clear_address() {
+// .SimpleServerConfig server = 1;
+inline bool AdvancedServerConfig::has_server() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.server_ != nullptr);
+  return value;
+}
+inline void AdvancedServerConfig::clear_server() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.address_.ClearToEmpty();
+  if (_impl_.server_ != nullptr) _impl_.server_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& ServerConfig::address() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:ServerConfig.address)
-  return _internal_address();
-}
-template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ServerConfig::set_address(Arg_&& arg,
-                                                     Args_... args) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.address_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
-  // @@protoc_insertion_point(field_set:ServerConfig.address)
-}
-inline std::string* ServerConfig::mutable_address() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_address();
-  // @@protoc_insertion_point(field_mutable:ServerConfig.address)
-  return _s;
-}
-inline const std::string& ServerConfig::_internal_address() const {
+inline const ::SimpleServerConfig& AdvancedServerConfig::_internal_server() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.address_.Get();
+  const ::SimpleServerConfig* p = _impl_.server_;
+  return p != nullptr ? *p : reinterpret_cast<const ::SimpleServerConfig&>(::_SimpleServerConfig_default_instance_);
 }
-inline void ServerConfig::_internal_set_address(const std::string& value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.address_.Set(value, GetArena());
+inline const ::SimpleServerConfig& AdvancedServerConfig::server() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:AdvancedServerConfig.server)
+  return _internal_server();
 }
-inline std::string* ServerConfig::_internal_mutable_address() {
+inline void AdvancedServerConfig::unsafe_arena_set_allocated_server(::SimpleServerConfig* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.address_.Mutable( GetArena());
-}
-inline std::string* ServerConfig::release_address() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:ServerConfig.address)
-  return _impl_.address_.Release();
-}
-inline void ServerConfig::set_allocated_address(std::string* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.address_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.address_.IsDefault()) {
-    _impl_.address_.Set("", GetArena());
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.server_);
   }
-  // @@protoc_insertion_point(field_set_allocated:ServerConfig.address)
+  _impl_.server_ = reinterpret_cast<::SimpleServerConfig*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:AdvancedServerConfig.server)
+}
+inline ::SimpleServerConfig* AdvancedServerConfig::release_server() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  ::SimpleServerConfig* released = _impl_.server_;
+  _impl_.server_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::SimpleServerConfig* AdvancedServerConfig::unsafe_arena_release_server() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:AdvancedServerConfig.server)
+
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  ::SimpleServerConfig* temp = _impl_.server_;
+  _impl_.server_ = nullptr;
+  return temp;
+}
+inline ::SimpleServerConfig* AdvancedServerConfig::_internal_mutable_server() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.server_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::SimpleServerConfig>(GetArena());
+    _impl_.server_ = reinterpret_cast<::SimpleServerConfig*>(p);
+  }
+  return _impl_.server_;
+}
+inline ::SimpleServerConfig* AdvancedServerConfig::mutable_server() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  ::SimpleServerConfig* _msg = _internal_mutable_server();
+  // @@protoc_insertion_point(field_mutable:AdvancedServerConfig.server)
+  return _msg;
+}
+inline void AdvancedServerConfig::set_allocated_server(::SimpleServerConfig* value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete (_impl_.server_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+
+  _impl_.server_ = reinterpret_cast<::SimpleServerConfig*>(value);
+  // @@protoc_insertion_point(field_set_allocated:AdvancedServerConfig.server)
 }
 
-// int32 port = 2;
-inline void ServerConfig::clear_port() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.port_ = 0;
-}
-inline ::int32_t ServerConfig::port() const {
-  // @@protoc_insertion_point(field_get:ServerConfig.port)
-  return _internal_port();
-}
-inline void ServerConfig::set_port(::int32_t value) {
-  _internal_set_port(value);
-  // @@protoc_insertion_point(field_set:ServerConfig.port)
-}
-inline ::int32_t ServerConfig::_internal_port() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.port_;
-}
-inline void ServerConfig::_internal_set_port(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.port_ = value;
-}
-
-// repeated .Room rooms = 3;
-inline int ServerConfig::_internal_rooms_size() const {
+// repeated .Room rooms = 2;
+inline int AdvancedServerConfig::_internal_rooms_size() const {
   return _internal_rooms().size();
 }
-inline int ServerConfig::rooms_size() const {
+inline int AdvancedServerConfig::rooms_size() const {
   return _internal_rooms_size();
 }
-inline void ServerConfig::clear_rooms() {
+inline void AdvancedServerConfig::clear_rooms() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.rooms_.Clear();
 }
-inline ::Room* ServerConfig::mutable_rooms(int index)
+inline ::Room* AdvancedServerConfig::mutable_rooms(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:ServerConfig.rooms)
+  // @@protoc_insertion_point(field_mutable:AdvancedServerConfig.rooms)
   return _internal_mutable_rooms()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::Room>* ServerConfig::mutable_rooms()
+inline ::google::protobuf::RepeatedPtrField<::Room>* AdvancedServerConfig::mutable_rooms()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable_list:ServerConfig.rooms)
+  // @@protoc_insertion_point(field_mutable_list:AdvancedServerConfig.rooms)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_rooms();
 }
-inline const ::Room& ServerConfig::rooms(int index) const
+inline const ::Room& AdvancedServerConfig::rooms(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:ServerConfig.rooms)
+  // @@protoc_insertion_point(field_get:AdvancedServerConfig.rooms)
   return _internal_rooms().Get(index);
 }
-inline ::Room* ServerConfig::add_rooms() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::Room* AdvancedServerConfig::add_rooms() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::Room* _add = _internal_mutable_rooms()->Add();
-  // @@protoc_insertion_point(field_add:ServerConfig.rooms)
+  // @@protoc_insertion_point(field_add:AdvancedServerConfig.rooms)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField<::Room>& ServerConfig::rooms() const
+inline const ::google::protobuf::RepeatedPtrField<::Room>& AdvancedServerConfig::rooms() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:ServerConfig.rooms)
+  // @@protoc_insertion_point(field_list:AdvancedServerConfig.rooms)
   return _internal_rooms();
 }
 inline const ::google::protobuf::RepeatedPtrField<::Room>&
-ServerConfig::_internal_rooms() const {
+AdvancedServerConfig::_internal_rooms() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.rooms_;
 }
 inline ::google::protobuf::RepeatedPtrField<::Room>*
-ServerConfig::_internal_mutable_rooms() {
+AdvancedServerConfig::_internal_mutable_rooms() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.rooms_;
 }
@@ -2037,6 +2262,80 @@ inline ::int32_t Room::_internal_maxconnections() const {
 inline void Room::_internal_set_maxconnections(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.maxconnections_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// SimpleServerConfig
+
+// string address = 1;
+inline void SimpleServerConfig::clear_address() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.address_.ClearToEmpty();
+}
+inline const std::string& SimpleServerConfig::address() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:SimpleServerConfig.address)
+  return _internal_address();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void SimpleServerConfig::set_address(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.address_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:SimpleServerConfig.address)
+}
+inline std::string* SimpleServerConfig::mutable_address() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_address();
+  // @@protoc_insertion_point(field_mutable:SimpleServerConfig.address)
+  return _s;
+}
+inline const std::string& SimpleServerConfig::_internal_address() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.address_.Get();
+}
+inline void SimpleServerConfig::_internal_set_address(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.address_.Set(value, GetArena());
+}
+inline std::string* SimpleServerConfig::_internal_mutable_address() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.address_.Mutable( GetArena());
+}
+inline std::string* SimpleServerConfig::release_address() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:SimpleServerConfig.address)
+  return _impl_.address_.Release();
+}
+inline void SimpleServerConfig::set_allocated_address(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.address_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.address_.IsDefault()) {
+    _impl_.address_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:SimpleServerConfig.address)
+}
+
+// int32 port = 2;
+inline void SimpleServerConfig::clear_port() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.port_ = 0;
+}
+inline ::int32_t SimpleServerConfig::port() const {
+  // @@protoc_insertion_point(field_get:SimpleServerConfig.port)
+  return _internal_port();
+}
+inline void SimpleServerConfig::set_port(::int32_t value) {
+  _internal_set_port(value);
+  // @@protoc_insertion_point(field_set:SimpleServerConfig.port)
+}
+inline ::int32_t SimpleServerConfig::_internal_port() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.port_;
+}
+inline void SimpleServerConfig::_internal_set_port(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.port_ = value;
 }
 
 // -------------------------------------------------------------------

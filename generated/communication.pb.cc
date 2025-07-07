@@ -25,6 +25,34 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 
+inline constexpr SimpleServerConfig::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : address_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        port_{0},
+        _cached_size_{0} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR SimpleServerConfig::SimpleServerConfig(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct SimpleServerConfigDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR SimpleServerConfigDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~SimpleServerConfigDefaultTypeInternal() {}
+  union {
+    SimpleServerConfig _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SimpleServerConfigDefaultTypeInternal _SimpleServerConfig_default_instance_;
+
 inline constexpr Room::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : name_(
@@ -201,17 +229,14 @@ struct ChatMessageDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
 
-inline constexpr ServerConfig::Impl_::Impl_(
+inline constexpr AdvancedServerConfig::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : rooms_{},
-        address_(
-            &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
-        port_{0},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        rooms_{},
+        server_{nullptr} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR ServerConfig::ServerConfig(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR AdvancedServerConfig::AdvancedServerConfig(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -219,33 +244,34 @@ PROTOBUF_CONSTEXPR ServerConfig::ServerConfig(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(::_pbi::ConstantInitialized()) {
 }
-struct ServerConfigDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ServerConfigDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ServerConfigDefaultTypeInternal() {}
+struct AdvancedServerConfigDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR AdvancedServerConfigDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~AdvancedServerConfigDefaultTypeInternal() {}
   union {
-    ServerConfig _instance;
+    AdvancedServerConfig _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServerConfigDefaultTypeInternal _ServerConfig_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AdvancedServerConfigDefaultTypeInternal _AdvancedServerConfig_default_instance_;
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_communication_2eproto[3];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_communication_2eproto = nullptr;
 const ::uint32_t
     TableStruct_communication_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::ServerConfig, _internal_metadata_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
         ~0u,  // no _inlined_string_donated_
         ~0u,  // no _split_
         ~0u,  // no sizeof(Split)
-        PROTOBUF_FIELD_OFFSET(::ServerConfig, _impl_.address_),
-        PROTOBUF_FIELD_OFFSET(::ServerConfig, _impl_.port_),
-        PROTOBUF_FIELD_OFFSET(::ServerConfig, _impl_.rooms_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.server_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.rooms_),
+        0,
+        ~0u,
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::Room, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -259,6 +285,16 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.haspassword_),
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.password_),
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.maxconnections_),
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::SimpleServerConfig, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::SimpleServerConfig, _impl_.address_),
+        PROTOBUF_FIELD_OFFSET(::SimpleServerConfig, _impl_.port_),
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::ClientUser, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -314,17 +350,19 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, -1, -1, sizeof(::ServerConfig)},
-        {11, -1, -1, sizeof(::Room)},
-        {24, -1, -1, sizeof(::ClientUser)},
-        {35, -1, -1, sizeof(::ChatMessage)},
-        {45, -1, -1, sizeof(::CommandRequest)},
-        {55, -1, -1, sizeof(::CommandResponse)},
-        {65, -1, -1, sizeof(::Envelope)},
+        {0, 10, -1, sizeof(::AdvancedServerConfig)},
+        {12, -1, -1, sizeof(::Room)},
+        {25, -1, -1, sizeof(::SimpleServerConfig)},
+        {35, -1, -1, sizeof(::ClientUser)},
+        {46, -1, -1, sizeof(::ChatMessage)},
+        {56, -1, -1, sizeof(::CommandRequest)},
+        {66, -1, -1, sizeof(::CommandResponse)},
+        {76, -1, -1, sizeof(::Envelope)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
-    &::_ServerConfig_default_instance_._instance,
+    &::_AdvancedServerConfig_default_instance_._instance,
     &::_Room_default_instance_._instance,
+    &::_SimpleServerConfig_default_instance_._instance,
     &::_ClientUser_default_instance_._instance,
     &::_ChatMessage_default_instance_._instance,
     &::_CommandRequest_default_instance_._instance,
@@ -333,38 +371,40 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n\023communication.proto\"C\n\014ServerConfig\022\017\n"
-    "\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\024\n\005rooms\030\003 "
-    "\003(\0132\005.Room\"_\n\004Room\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002"
-    " \001(\t\022\023\n\013hasPassword\030\003 \001(\010\022\020\n\010password\030\004 "
-    "\001(\t\022\026\n\016maxConnections\030\005 \001(\005\"\?\n\nClientUse"
-    "r\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017connected"
-    "RoomID\030\003 \001(\005\".\n\013ChatMessage\022\016\n\006sender\030\001 "
-    "\001(\t\022\017\n\007message\030\002 \001(\t\"<\n\016CommandRequest\022\017"
-    "\n\007request\030\001 \001(\t\022\031\n\021requestParameters\030\002 \003"
-    "(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\0162\014.Co"
-    "mmandType\022\020\n\010response\030\002 \001(\t\"7\n\010Envelope\022"
-    "\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030\003"
-    " \001(\014*`\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n\004HELP"
-    "\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE"
-    "_ROOM\020\004\022\r\n\tROOM_LIST\020\005*_\n\013MessageType\022\020\n"
-    "\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_ROOM\020\001\022\023\n\017U"
-    "SER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PING\020\005*"
-    "V\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_"
-    "ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006G"
-    "LOBAL\020\003b\006proto3"
+    "\n\023communication.proto\"Q\n\024AdvancedServerC"
+    "onfig\022#\n\006server\030\001 \001(\0132\023.SimpleServerConf"
+    "ig\022\024\n\005rooms\030\002 \003(\0132\005.Room\"_\n\004Room\022\n\n\002id\030\001"
+    " \001(\005\022\014\n\004name\030\002 \001(\t\022\023\n\013hasPassword\030\003 \001(\010\022"
+    "\020\n\010password\030\004 \001(\t\022\026\n\016maxConnections\030\005 \001("
+    "\005\"3\n\022SimpleServerConfig\022\017\n\007address\030\001 \001(\t"
+    "\022\014\n\004port\030\002 \001(\005\"\?\n\nClientUser\022\n\n\002id\030\001 \001(\005"
+    "\022\014\n\004name\030\002 \001(\t\022\027\n\017connectedRoomID\030\003 \001(\005\""
+    ".\n\013ChatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007messag"
+    "e\030\002 \001(\t\"<\n\016CommandRequest\022\017\n\007request\030\001 \001"
+    "(\t\022\031\n\021requestParameters\030\002 \003(\t\"\?\n\017Command"
+    "Response\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n\010"
+    "response\030\002 \001(\t\"7\n\010Envelope\022\032\n\004type\030\002 \001(\016"
+    "2\014.MessageType\022\017\n\007payload\030\003 \001(\014*`\n\013Comma"
+    "ndType\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAM"
+    "E\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tRO"
+    "OM_LIST\020\005*_\n\013MessageType\022\020\n\014CHAT_MESSAGE"
+    "\020\000\022\022\n\016USER_JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROO"
+    "M\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PING\020\005*V\n\017MessageSen"
+    "dType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033\n\027WIT"
+    "HIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003b\006prot"
+    "o3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    775,
+    842,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
     nullptr,
     0,
-    7,
+    8,
     schemas,
     file_default_instances,
     TableStruct_communication_2eproto::offsets,
@@ -400,214 +440,208 @@ bool MessageSendType_IsValid(int value) {
 }
 // ===================================================================
 
-class ServerConfig::_Internal {
+class AdvancedServerConfig::_Internal {
  public:
+  using HasBits =
+      decltype(std::declval<AdvancedServerConfig>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_._has_bits_);
 };
 
-ServerConfig::ServerConfig(::google::protobuf::Arena* arena)
+AdvancedServerConfig::AdvancedServerConfig(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
-  // @@protoc_insertion_point(arena_constructor:ServerConfig)
+  // @@protoc_insertion_point(arena_constructor:AdvancedServerConfig)
 }
-inline PROTOBUF_NDEBUG_INLINE ServerConfig::Impl_::Impl_(
+inline PROTOBUF_NDEBUG_INLINE AdvancedServerConfig::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::ServerConfig& from_msg)
-      : rooms_{visibility, arena, from.rooms_},
-        address_(arena, from.address_),
-        _cached_size_{0} {}
+    const Impl_& from, const ::AdvancedServerConfig& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        rooms_{visibility, arena, from.rooms_} {}
 
-ServerConfig::ServerConfig(
+AdvancedServerConfig::AdvancedServerConfig(
     ::google::protobuf::Arena* arena,
-    const ServerConfig& from)
+    const AdvancedServerConfig& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ServerConfig* const _this = this;
+  AdvancedServerConfig* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_.port_ = from._impl_.port_;
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.server_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::SimpleServerConfig>(
+                              arena, *from._impl_.server_)
+                        : nullptr;
 
-  // @@protoc_insertion_point(copy_constructor:ServerConfig)
+  // @@protoc_insertion_point(copy_constructor:AdvancedServerConfig)
 }
-inline PROTOBUF_NDEBUG_INLINE ServerConfig::Impl_::Impl_(
+inline PROTOBUF_NDEBUG_INLINE AdvancedServerConfig::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : rooms_{visibility, arena},
-        address_(arena),
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        rooms_{visibility, arena} {}
 
-inline void ServerConfig::SharedCtor(::_pb::Arena* arena) {
+inline void AdvancedServerConfig::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  _impl_.port_ = {};
+  _impl_.server_ = {};
 }
-ServerConfig::~ServerConfig() {
-  // @@protoc_insertion_point(destructor:ServerConfig)
+AdvancedServerConfig::~AdvancedServerConfig() {
+  // @@protoc_insertion_point(destructor:AdvancedServerConfig)
   SharedDtor(*this);
 }
-inline void ServerConfig::SharedDtor(MessageLite& self) {
-  ServerConfig& this_ = static_cast<ServerConfig&>(self);
+inline void AdvancedServerConfig::SharedDtor(MessageLite& self) {
+  AdvancedServerConfig& this_ = static_cast<AdvancedServerConfig&>(self);
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
-  this_._impl_.address_.Destroy();
+  delete this_._impl_.server_;
   this_._impl_.~Impl_();
 }
 
-inline void* ServerConfig::PlacementNew_(const void*, void* mem,
+inline void* AdvancedServerConfig::PlacementNew_(const void*, void* mem,
                                         ::google::protobuf::Arena* arena) {
-  return ::new (mem) ServerConfig(arena);
+  return ::new (mem) AdvancedServerConfig(arena);
 }
-constexpr auto ServerConfig::InternalNewImpl_() {
+constexpr auto AdvancedServerConfig::InternalNewImpl_() {
   constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.rooms_) +
-          decltype(ServerConfig::_impl_.rooms_)::
+      PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_) +
+          decltype(AdvancedServerConfig::_impl_.rooms_)::
               InternalGetArenaOffset(
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(
-        sizeof(ServerConfig), alignof(ServerConfig), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(AdvancedServerConfig), alignof(AdvancedServerConfig), *arena_bits);
   } else {
-    return ::google::protobuf::internal::MessageCreator(&ServerConfig::PlacementNew_,
-                                 sizeof(ServerConfig),
-                                 alignof(ServerConfig));
+    return ::google::protobuf::internal::MessageCreator(&AdvancedServerConfig::PlacementNew_,
+                                 sizeof(AdvancedServerConfig),
+                                 alignof(AdvancedServerConfig));
   }
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull ServerConfig::_class_data_ = {
+const ::google::protobuf::internal::ClassDataFull AdvancedServerConfig::_class_data_ = {
     ::google::protobuf::internal::ClassData{
-        &_ServerConfig_default_instance_._instance,
+        &_AdvancedServerConfig_default_instance_._instance,
         &_table_.header,
         nullptr,  // OnDemandRegisterArenaDtor
         nullptr,  // IsInitialized
-        &ServerConfig::MergeImpl,
-        ::google::protobuf::Message::GetNewImpl<ServerConfig>(),
+        &AdvancedServerConfig::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<AdvancedServerConfig>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &ServerConfig::SharedDtor,
-        ::google::protobuf::Message::GetClearImpl<ServerConfig>(), &ServerConfig::ByteSizeLong,
-            &ServerConfig::_InternalSerialize,
+        &AdvancedServerConfig::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<AdvancedServerConfig>(), &AdvancedServerConfig::ByteSizeLong,
+            &AdvancedServerConfig::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_._cached_size_),
+        PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_._cached_size_),
         false,
     },
-    &ServerConfig::kDescriptorMethods,
+    &AdvancedServerConfig::kDescriptorMethods,
     &descriptor_table_communication_2eproto,
     nullptr,  // tracker
 };
-const ::google::protobuf::internal::ClassData* ServerConfig::GetClassData() const {
+const ::google::protobuf::internal::ClassData* AdvancedServerConfig::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 28, 2> ServerConfig::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 2, 0, 2> AdvancedServerConfig::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_._has_bits_),
     0, // no _extensions_
-    3, 24,  // max_field_number, fast_idx_mask
+    2, 8,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967288,  // skipmap
+    4294967292,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
-    1,  // num_aux_entries
+    2,  // num_field_entries
+    2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::ServerConfig>(),  // to_prefetch
+    ::_pbi::TcParser::GetTable<::AdvancedServerConfig>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
-    // string address = 1;
-    {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.address_)}},
-    // int32 port = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(ServerConfig, _impl_.port_), 63>(),
-     {16, 63, 0, PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.port_)}},
-    // repeated .Room rooms = 3;
+    // repeated .Room rooms = 2;
     {::_pbi::TcParser::FastMtR1,
-     {26, 63, 0, PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.rooms_)}},
+     {18, 63, 1, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_)}},
+    // .SimpleServerConfig server = 1;
+    {::_pbi::TcParser::FastMtS1,
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.server_)}},
   }}, {{
     65535, 65535
   }}, {{
-    // string address = 1;
-    {PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.address_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    // int32 port = 2;
-    {PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.port_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
-    // repeated .Room rooms = 3;
-    {PROTOBUF_FIELD_OFFSET(ServerConfig, _impl_.rooms_), 0, 0,
+    // .SimpleServerConfig server = 1;
+    {PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.server_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    // repeated .Room rooms = 2;
+    {PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
+    {::_pbi::TcParser::GetTable<::SimpleServerConfig>()},
     {::_pbi::TcParser::GetTable<::Room>()},
   }}, {{
-    "\14\7\0\0\0\0\0\0"
-    "ServerConfig"
-    "address"
   }},
 };
 
-PROTOBUF_NOINLINE void ServerConfig::Clear() {
-// @@protoc_insertion_point(message_clear_start:ServerConfig)
+PROTOBUF_NOINLINE void AdvancedServerConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:AdvancedServerConfig)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_.rooms_.Clear();
-  _impl_.address_.ClearToEmpty();
-  _impl_.port_ = 0;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.server_ != nullptr);
+    _impl_.server_->Clear();
+  }
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::uint8_t* ServerConfig::_InternalSerialize(
+        ::uint8_t* AdvancedServerConfig::_InternalSerialize(
             const MessageLite& base, ::uint8_t* target,
             ::google::protobuf::io::EpsCopyOutputStream* stream) {
-          const ServerConfig& this_ = static_cast<const ServerConfig&>(base);
+          const AdvancedServerConfig& this_ = static_cast<const AdvancedServerConfig&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::uint8_t* ServerConfig::_InternalSerialize(
+        ::uint8_t* AdvancedServerConfig::_InternalSerialize(
             ::uint8_t* target,
             ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-          const ServerConfig& this_ = *this;
+          const AdvancedServerConfig& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(serialize_to_array_start:ServerConfig)
+          // @@protoc_insertion_point(serialize_to_array_start:AdvancedServerConfig)
           ::uint32_t cached_has_bits = 0;
           (void)cached_has_bits;
 
-          // string address = 1;
-          if (!this_._internal_address().empty()) {
-            const std::string& _s = this_._internal_address();
-            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "ServerConfig.address");
-            target = stream->WriteStringMaybeAliased(1, _s, target);
+          cached_has_bits = this_._impl_._has_bits_[0];
+          // .SimpleServerConfig server = 1;
+          if (cached_has_bits & 0x00000001u) {
+            target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                1, *this_._impl_.server_, this_._impl_.server_->GetCachedSize(), target,
+                stream);
           }
 
-          // int32 port = 2;
-          if (this_._internal_port() != 0) {
-            target = ::google::protobuf::internal::WireFormatLite::
-                WriteInt32ToArrayWithField<2>(
-                    stream, this_._internal_port(), target);
-          }
-
-          // repeated .Room rooms = 3;
+          // repeated .Room rooms = 2;
           for (unsigned i = 0, n = static_cast<unsigned>(
                                    this_._internal_rooms_size());
                i < n; i++) {
             const auto& repfield = this_._internal_rooms().Get(i);
             target =
                 ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-                    3, repfield, repfield.GetCachedSize(),
+                    2, repfield, repfield.GetCachedSize(),
                     target, stream);
           }
 
@@ -616,18 +650,18 @@ PROTOBUF_NOINLINE void ServerConfig::Clear() {
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
           }
-          // @@protoc_insertion_point(serialize_to_array_end:ServerConfig)
+          // @@protoc_insertion_point(serialize_to_array_end:AdvancedServerConfig)
           return target;
         }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::size_t ServerConfig::ByteSizeLong(const MessageLite& base) {
-          const ServerConfig& this_ = static_cast<const ServerConfig&>(base);
+        ::size_t AdvancedServerConfig::ByteSizeLong(const MessageLite& base) {
+          const AdvancedServerConfig& this_ = static_cast<const AdvancedServerConfig&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t ServerConfig::ByteSizeLong() const {
-          const ServerConfig& this_ = *this;
+        ::size_t AdvancedServerConfig::ByteSizeLong() const {
+          const AdvancedServerConfig& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(message_byte_size_start:ServerConfig)
+          // @@protoc_insertion_point(message_byte_size_start:AdvancedServerConfig)
           ::size_t total_size = 0;
 
           ::uint32_t cached_has_bits = 0;
@@ -636,7 +670,7 @@ PROTOBUF_NOINLINE void ServerConfig::Clear() {
 
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
-            // repeated .Room rooms = 3;
+            // repeated .Room rooms = 2;
             {
               total_size += 1UL * this_._internal_rooms_size();
               for (const auto& msg : this_._internal_rooms()) {
@@ -645,59 +679,59 @@ PROTOBUF_NOINLINE void ServerConfig::Clear() {
             }
           }
            {
-            // string address = 1;
-            if (!this_._internal_address().empty()) {
-              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                              this_._internal_address());
-            }
-            // int32 port = 2;
-            if (this_._internal_port() != 0) {
-              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-                  this_._internal_port());
+            // .SimpleServerConfig server = 1;
+            cached_has_bits = this_._impl_._has_bits_[0];
+            if (cached_has_bits & 0x00000001u) {
+              total_size += 1 +
+                            ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.server_);
             }
           }
           return this_.MaybeComputeUnknownFieldsSize(total_size,
                                                      &this_._impl_._cached_size_);
         }
 
-void ServerConfig::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<ServerConfig*>(&to_msg);
-  auto& from = static_cast<const ServerConfig&>(from_msg);
-  // @@protoc_insertion_point(class_specific_merge_from_start:ServerConfig)
+void AdvancedServerConfig::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
+  auto* const _this = static_cast<AdvancedServerConfig*>(&to_msg);
+  auto& from = static_cast<const AdvancedServerConfig&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  // @@protoc_insertion_point(class_specific_merge_from_start:AdvancedServerConfig)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   _this->_internal_mutable_rooms()->MergeFrom(
       from._internal_rooms());
-  if (!from._internal_address().empty()) {
-    _this->_internal_set_address(from._internal_address());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(from._impl_.server_ != nullptr);
+    if (_this->_impl_.server_ == nullptr) {
+      _this->_impl_.server_ =
+          ::google::protobuf::Message::CopyConstruct<::SimpleServerConfig>(arena, *from._impl_.server_);
+    } else {
+      _this->_impl_.server_->MergeFrom(*from._impl_.server_);
+    }
   }
-  if (from._internal_port() != 0) {
-    _this->_impl_.port_ = from._impl_.port_;
-  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
-void ServerConfig::CopyFrom(const ServerConfig& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:ServerConfig)
+void AdvancedServerConfig::CopyFrom(const AdvancedServerConfig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:AdvancedServerConfig)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 
-void ServerConfig::InternalSwap(ServerConfig* PROTOBUF_RESTRICT other) {
+void AdvancedServerConfig::InternalSwap(AdvancedServerConfig* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.rooms_.InternalSwap(&other->_impl_.rooms_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.address_, &other->_impl_.address_, arena);
-        swap(_impl_.port_, other->_impl_.port_);
+  swap(_impl_.server_, other->_impl_.server_);
 }
 
-::google::protobuf::Metadata ServerConfig::GetMetadata() const {
+::google::protobuf::Metadata AdvancedServerConfig::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
@@ -1045,6 +1079,263 @@ void Room::InternalSwap(Room* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Room::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class SimpleServerConfig::_Internal {
+ public:
+};
+
+SimpleServerConfig::SimpleServerConfig(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:SimpleServerConfig)
+}
+inline PROTOBUF_NDEBUG_INLINE SimpleServerConfig::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from, const ::SimpleServerConfig& from_msg)
+      : address_(arena, from.address_),
+        _cached_size_{0} {}
+
+SimpleServerConfig::SimpleServerConfig(
+    ::google::protobuf::Arena* arena,
+    const SimpleServerConfig& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SimpleServerConfig* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  _impl_.port_ = from._impl_.port_;
+
+  // @@protoc_insertion_point(copy_constructor:SimpleServerConfig)
+}
+inline PROTOBUF_NDEBUG_INLINE SimpleServerConfig::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : address_(arena),
+        _cached_size_{0} {}
+
+inline void SimpleServerConfig::SharedCtor(::_pb::Arena* arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.port_ = {};
+}
+SimpleServerConfig::~SimpleServerConfig() {
+  // @@protoc_insertion_point(destructor:SimpleServerConfig)
+  SharedDtor(*this);
+}
+inline void SimpleServerConfig::SharedDtor(MessageLite& self) {
+  SimpleServerConfig& this_ = static_cast<SimpleServerConfig&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.address_.Destroy();
+  this_._impl_.~Impl_();
+}
+
+inline void* SimpleServerConfig::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) SimpleServerConfig(arena);
+}
+constexpr auto SimpleServerConfig::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SimpleServerConfig),
+                                            alignof(SimpleServerConfig));
+}
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::internal::ClassDataFull SimpleServerConfig::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_SimpleServerConfig_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &SimpleServerConfig::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<SimpleServerConfig>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        &SimpleServerConfig::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<SimpleServerConfig>(), &SimpleServerConfig::ByteSizeLong,
+            &SimpleServerConfig::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+        PROTOBUF_FIELD_OFFSET(SimpleServerConfig, _impl_._cached_size_),
+        false,
+    },
+    &SimpleServerConfig::kDescriptorMethods,
+    &descriptor_table_communication_2eproto,
+    nullptr,  // tracker
+};
+const ::google::protobuf::internal::ClassData* SimpleServerConfig::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<1, 2, 0, 34, 2> SimpleServerConfig::_table_ = {
+  {
+    0,  // no _has_bits_
+    0, // no _extensions_
+    2, 8,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967292,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    2,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    _class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::SimpleServerConfig>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    // int32 port = 2;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SimpleServerConfig, _impl_.port_), 63>(),
+     {16, 63, 0, PROTOBUF_FIELD_OFFSET(SimpleServerConfig, _impl_.port_)}},
+    // string address = 1;
+    {::_pbi::TcParser::FastUS1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(SimpleServerConfig, _impl_.address_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // string address = 1;
+    {PROTOBUF_FIELD_OFFSET(SimpleServerConfig, _impl_.address_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // int32 port = 2;
+    {PROTOBUF_FIELD_OFFSET(SimpleServerConfig, _impl_.port_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
+  }},
+  // no aux_entries
+  {{
+    "\22\7\0\0\0\0\0\0"
+    "SimpleServerConfig"
+    "address"
+  }},
+};
+
+PROTOBUF_NOINLINE void SimpleServerConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:SimpleServerConfig)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.address_.ClearToEmpty();
+  _impl_.port_ = 0;
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* SimpleServerConfig::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const SimpleServerConfig& this_ = static_cast<const SimpleServerConfig&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* SimpleServerConfig::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const SimpleServerConfig& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:SimpleServerConfig)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
+
+          // string address = 1;
+          if (!this_._internal_address().empty()) {
+            const std::string& _s = this_._internal_address();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "SimpleServerConfig.address");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
+
+          // int32 port = 2;
+          if (this_._internal_port() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<2>(
+                    stream, this_._internal_port(), target);
+          }
+
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:SimpleServerConfig)
+          return target;
+        }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t SimpleServerConfig::ByteSizeLong(const MessageLite& base) {
+          const SimpleServerConfig& this_ = static_cast<const SimpleServerConfig&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t SimpleServerConfig::ByteSizeLong() const {
+          const SimpleServerConfig& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:SimpleServerConfig)
+          ::size_t total_size = 0;
+
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
+
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // string address = 1;
+            if (!this_._internal_address().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_address());
+            }
+            // int32 port = 2;
+            if (this_._internal_port() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_port());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
+
+void SimpleServerConfig::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
+  auto* const _this = static_cast<SimpleServerConfig*>(&to_msg);
+  auto& from = static_cast<const SimpleServerConfig&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:SimpleServerConfig)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_address().empty()) {
+    _this->_internal_set_address(from._internal_address());
+  }
+  if (from._internal_port() != 0) {
+    _this->_impl_.port_ = from._impl_.port_;
+  }
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void SimpleServerConfig::CopyFrom(const SimpleServerConfig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:SimpleServerConfig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void SimpleServerConfig::InternalSwap(SimpleServerConfig* PROTOBUF_RESTRICT other) {
+  using std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.address_, &other->_impl_.address_, arena);
+        swap(_impl_.port_, other->_impl_.port_);
+}
+
+::google::protobuf::Metadata SimpleServerConfig::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================

@@ -19,7 +19,7 @@ Server::~Server() {
     delete(serverConfig);
 }
 
-bool Server::Initialize(ServerConfig* _serverConfig) {
+bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
     if (initialized)
         return false;
     
@@ -47,13 +47,13 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
 
     serverAddr = {};
     serverAddr.sin_family = AF_INET;
-    if (serverConfig->address().empty()) {
+    if (serverConfig->server().address().empty()) {
         serverAddr.sin_addr.s_addr = INADDR_ANY; // local address ip
     }
     else {
         in_addr addr;
 
-        if (inet_pton(AF_INET, serverConfig->address().c_str(), &addr) == -1)
+        if (inet_pton(AF_INET, serverConfig->server().address().c_str(), &addr) == -1)
         {
             file_logger->error("Invalid IPv4 address, setting as local");
 
@@ -64,7 +64,7 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
         }
 
     }
-    serverAddr.sin_port = htons(serverConfig->port());
+    serverAddr.sin_port = htons(serverConfig->server().port());
 
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
         file_logger->error("Bind failed {}", WSAGetLastError());
@@ -73,7 +73,7 @@ bool Server::Initialize(ServerConfig* _serverConfig) {
         return false;
     }
 
-    file_logger->info("Server listening on port {}", serverConfig->port());
+    file_logger->info("Server listening on port {}", serverConfig->server().port());
 
     if (listen(serverSocket, maxConnections) == SOCKET_ERROR) {
         file_logger->error("Listen failed: {}", WSAGetLastError());

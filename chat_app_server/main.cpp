@@ -41,13 +41,13 @@ int main()
         std::istreambuf_iterator<char>());
     config_file.close();
 
-    ServerConfig* serverConfig = new ServerConfig();
+    AdvancedServerConfig* serverConfig = new AdvancedServerConfig();
     google::protobuf::util::JsonStringToMessage(json_content, serverConfig);
 
     std::string roomsInfo;
     roomsInfo += "\n--- Server Configuration ---\n";
-    roomsInfo += "Server Address: " + serverConfig->address() + "\n";
-    roomsInfo += "Server Port: " + std::to_string(serverConfig->port()) + "\n";
+    roomsInfo += "Server Address: " + serverConfig->server().address() + "\n";
+    roomsInfo += "Server Port: " + std::to_string(serverConfig->server().port()) + "\n";
 
     roomsInfo += "--- Room Configuration ---\n";
     for (const auto& room : serverConfig->rooms()) {
