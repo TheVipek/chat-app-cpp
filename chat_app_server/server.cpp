@@ -29,7 +29,7 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
     {
         Room* roomData = new Room();
         roomData->CopyFrom(room);
-        RoomContainer* container = new RoomContainer(roomData);
+        RoomContainer* container = new RoomContainer(roomData, false);
 
         roomContainers.insert({ roomData->name(), container });
     }
@@ -99,6 +99,7 @@ bool Server::IsInitialized()
 void Server::PingClients() {
     Envelope ping_envelope{};
     ping_envelope.set_type(MessageType::PING);
+    ping_envelope.set_sendtype(MessageSendType::LOCAL);
     std::string ping_envelope_str;
     ping_envelope.SerializeToString(&ping_envelope_str);
 
@@ -110,7 +111,7 @@ void Server::PingClients() {
         SOCKET soc = writeSet.fd_array[i];
         if (now - lastPingTime[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
             file_logger->info("Ping socket {}", soc);
-            bool failed = Send(ping_envelope, MessageSendType::LOCAL, soc).size() > 0;
+            bool failed = Send(ping_envelope, soc).size() > 0;
             if (failed)
             {
                 file_logger->warn("SOCKET {} marked as to be kicked, due to network issues.", soc);
@@ -208,9 +209,10 @@ void Server::Run() {
                             //i will create more advanced handling for server if needed in future
                             Envelope envelope2{};
                             envelope2.set_type(MessageType::USER_LEAVE_ROOM);
+                            envelope2.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
                             std::string msg = user->name() + "has been kicked from the server due to network error.";
                             envelope2.set_payload(msg);
-                            Send(envelope2, MessageSendType::WITHIN_ROOM_EXCEPT_THIS, senderSocket);
+                            Send(envelope2, senderSocket);
 
                             auto roomContainer = GetRoomContainer(user->connectedroomid());
                             roomContainer->RemoveUser(user);
@@ -240,12 +242,15 @@ void Server::Stop() {
     if (!initialized)
         return;
 }
-std::vector<SOCKET> Server::Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket)
+std::vector<SOCKET> Server::Send(const Envelope& envelope, SOCKET senderSocket)
 {
     std::vector<SOCKET> failedSockets;
 
     std::string envelopeParsed;
     envelope.SerializeToString(&envelopeParsed);
+
+    auto msgSendType = envelope.sendtype();
+
     if (msgSendType == MessageSendType::LOCAL)
     {
         if (send(senderSocket, envelopeParsed.data(), envelopeParsed.size(), 0) == SOCKET_ERROR)
@@ -345,6 +350,19 @@ ClientUser* Server::GetUser(SOCKET socket) {
 bool Server::HasRoom(std::string roomName) {
     return roomContainers.contains(roomName);
 }
+int Server::MaxRoomID()
+{
+    int maxID = -1;
+
+    for (auto& k : roomContainers)
+    {
+        int roomID = k.second->room->id();
+        maxID = maxID < roomID ? roomID : maxID;
+    }
+
+    return maxID;
+}
+
 RoomContainer* Server::GetRoomContainer(std::string roomName) {
     return roomContainers[roomName];
 }
@@ -370,4 +388,39 @@ std::vector<RoomContainer*> Server::GetRoomContainers()
     }
 
     return _roomContainers;
+}
+RoomContainer* Server::CreateRoom(std::string name, int maxConnections, bool isPublic, std::string password, bool destroyOnEmpty)
+{
+    Room* newRoom = new Room();
+    newRoom->set_name(name);
+    newRoom->set_maxconnections(maxConnections);
+    newRoom->set_ispublic(isPublic);
+
+    if (password.empty())
+    {
+        newRoom->set_haspassword(false);
+    }
+    else 
+    {
+        newRoom->set_haspassword(true);
+        newRoom->set_password(password);
+    }
+    int roomID = MaxRoomID() + 1;
+
+    newRoom->set_id(roomID);
+    RoomContainer* container = new RoomContainer(newRoom, destroyOnEmpty);
+
+    roomContainers[newRoom->name()] = container;
+
+    return container;
+}
+void Server::RemoveRoom(std::string name)
+{
+    if (roomContainers.contains(name))
+    {
+        auto room = roomContainers[name];
+        roomContainers.erase(name);
+
+        delete room;
+    }
 }

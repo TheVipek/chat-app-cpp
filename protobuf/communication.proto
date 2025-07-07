@@ -16,13 +16,17 @@ message Room {
     bool isPublic = 6;
 }
 
-//----------------------------------------------CLIENT<--->SERVER----------------------------------------------
+//----------------------------------------------CLIENT______ONLY----------------------------------------------
 
 message SimpleServerConfig
 {
     string address = 1;
     int32 port = 2;
 }
+
+//----------------------------------------------CLIENT<--->SERVER----------------------------------------------
+
+
 
 message ClientUser {
     int32 id = 1;
@@ -42,6 +46,7 @@ enum CommandType {
     JOIN_ROOM = 3;
     LEAVE_ROOM = 4;
     ROOM_LIST = 5;
+    CREATE_ROOM = 6;
 }
 
 message CommandRequest {
@@ -69,6 +74,8 @@ enum MessageSendType {
 }
 
 message Envelope {
+    MessageSendType sendType = 1;
     MessageType type = 2;
     bytes payload = 3;
 }
+

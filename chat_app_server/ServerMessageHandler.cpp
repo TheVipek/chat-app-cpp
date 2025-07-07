@@ -5,6 +5,7 @@
 #include "Commands/joinroomcommand.h"
 #include "Commands/roomlistcommand.h"
 #include "Commands/leaveroomcommand.h"
+#include "Commands/createroom.h"
 
 ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdlog::logger> _file_logger) {
 	server = _server;
@@ -14,6 +15,7 @@ ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdl
     commands["/joinRoom"] = std::make_unique<JoinRoomCommand>(_file_logger);
     commands["/leaveRoom"] = std::make_unique<LeaveRoomCommand>(_file_logger);
     commands["/roomList"] = std::make_unique<RoomListCommand>(_file_logger);
+    commands["/createRoom"] = std::make_unique<CreateRoom>(_file_logger);
 }
 
 void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET senderSocket)
@@ -93,6 +95,7 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
                 {
                     Envelope envelope{};
                     envelope.set_type(MessageType::COMMAND);
+                    envelope.set_sendtype(MessageSendType::LOCAL);
                     file_logger->warn("Invalid command: {} from socket {}", req, senderSocket);
 
 
@@ -101,7 +104,7 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
                     cres.set_type(CommandType::INVALID);
                     envelope.set_payload(cres.SerializeAsString());
 
-                    server->Send(envelope, MessageSendType::LOCAL, senderSocket);
+                    server->Send(envelope, senderSocket);
                 }
             }
             break;

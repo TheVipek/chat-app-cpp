@@ -4,7 +4,7 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
 {
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
-    MessageSendType sendType;
+    envelope.set_sendtype(MessageSendType::LOCAL);
     file_logger->info("Set Nick Command Process");
     if (creq.requestparameters().size() == 1)
     {
@@ -12,7 +12,6 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
 
         if (proposedUserName.empty())
         {
-            sendType = MessageSendType::LOCAL;
             CommandResponse cres{};
             file_logger->warn("Invalid usage");
             cres.set_response("Invalid usage of /setnick (eg. /setnick SIGMA)");
@@ -31,8 +30,6 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
             file_logger->info("Set proposed nickname {}", proposedUserName.c_str());
 
             user->set_name(proposedUserName);
-
-            sendType = MessageSendType::LOCAL;
             CommandResponse cres{};
 
            
@@ -46,8 +43,6 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
     }
     else {
         file_logger->warn("Invalid usage");
-
-        sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
         cres.set_response("Invalid usage of /setnick (eg. /setnick SIGMA)");
         cres.set_type(CommandType::INVALID);
@@ -55,5 +50,5 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
     }
 
     file_logger->info("Send to client");
-    server->Send(envelope, sendType, senderSocket);
+    server->Send(envelope, senderSocket);
 }

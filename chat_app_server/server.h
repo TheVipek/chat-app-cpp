@@ -20,11 +20,14 @@ public:
 	bool IsInitialized();
 	void Run();
 	void Stop();
-	std::vector<SOCKET> Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket);
+	std::vector<SOCKET> Send(const Envelope& envelope, SOCKET senderSocket);
 	int GetNewUserIdentifier();
 	bool HasRoom(std::string roomName);
+	int MaxRoomID();
 	RoomContainer* GetRoomContainer(std::string roomName);
 	RoomContainer* GetRoomContainer(int roomID);
+	RoomContainer* CreateRoom(std::string name, int maxConnections, bool isPublic, std::string password, bool destroyOnEmpty);
+	void RemoveRoom(std::string name);
 	std::vector<RoomContainer*> GetRoomContainers();
 	ClientUser* GetUser(SOCKET socket);
 protected:
@@ -43,7 +46,7 @@ protected:
 	sockaddr_in clientAddr;
 	SOCKET fdmax;
 	SOCKET newfd;
-	char messageBuffer[256];
+	char messageBuffer[1024];
 	int receivedBytes;
 	int addrlen;
 

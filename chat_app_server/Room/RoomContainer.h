@@ -4,9 +4,11 @@
 class RoomContainer
 {
 public:
-	RoomContainer(Room* room);
+	RoomContainer(Room* room, bool destroyOnEmpty);
+	~RoomContainer();
 	Room* room;
 	std::set<ClientUser*> usersInRoom;
+	bool destroyOnEmpty;
 	void AddUser(ClientUser* user);
 	void RemoveUser(ClientUser* user);
 };

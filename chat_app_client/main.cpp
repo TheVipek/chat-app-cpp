@@ -49,7 +49,17 @@ std::thread pingThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
 float scroll_y = 1.f;
+std::map<MessageSendType, std::string> sendTypeMappings;
 
+std::string GetSendTypeString(MessageSendType messageSendType)
+{
+	if (sendTypeMappings.contains(messageSendType))
+	{
+		return sendTypeMappings[messageSendType];
+	}
+
+	return "Unknown Send Type";
+}
 
 void EndProcess()
 {
@@ -105,7 +115,7 @@ void HandleInput() {
 	if (currentInput[0] == '/') // command
 	{
 		file_logger->info("Sending command");
-		auto msg = GetChatMessage(currentInput, "[ONLY YOU]");
+		auto msg = GetChatMessage(currentInput, GetSendTypeString(MessageSendType::LOCAL));
 		AddChatMessage(msg);
 		
 		std::istringstream iss(currentInput);
@@ -132,7 +142,8 @@ void HandleInput() {
 	else if(clientUser.id() != -1 && clientUser.connectedroomid() != -1)
 	{
 		file_logger->info("Send Chat Message");
-		auto msg = GetChatMessage(currentInput, clientUser.name());
+		std::string name = std::format("{}#{}", clientUser.name(), clientUser.id());
+		auto msg = GetChatMessage(currentInput, name);
 
 		Envelope envelope{};
 		envelope.set_type(MessageType::CHAT_MESSAGE);
@@ -146,7 +157,7 @@ void HandleInput() {
 	else 
 	{
 		file_logger->warn("Cannot send chat message");
-		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", "[ONLY YOU]");
+		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", GetSendTypeString(MessageSendType::LOCAL));
 		AddChatMessage(msg);
 	}
 
@@ -164,12 +175,24 @@ void UpdateChat() {
 		chatMutex.lock();
 		for (const auto& msg : chatHistory) {
 
-			char timeString[std::size("yyyy-mm-ddThh:mm:ssZ")];
+			char timeString[std::size("hh:mm:ssZ")];
 			std::strftime(std::data(timeString), std::size(timeString),
-				"%F %T", std::gmtime(&msg.receiveTime));
+				"%T", std::gmtime(&msg.receiveTime));
+			std::string time_str = "[" + std::string(timeString) + "]";
+			auto styled_time = ftxui::text(time_str) | ftxui::color(ftxui::Color::DeepSkyBlue1);
+			std::string sender = msg.chatMessage.sender();
+			auto styled_sender = ftxui::text("          " + sender) | ftxui::color(ftxui::Color::Yellow);
+			std::string message = msg.chatMessage.message();
+			auto styled_message = ftxui::text(message);
 
-			std::string s = "[" + std::string(timeString) + "]" + msg.chatMessage.sender() + ":" + msg.chatMessage.message();
-			message_elements.push_back(paragraph(s));
+
+			message_elements.push_back(hbox(
+			{
+				styled_time,
+				styled_sender,
+				separator(),
+				styled_message,
+			}));
 		}
 		chatMutex.unlock();
 
@@ -235,7 +258,7 @@ void ListenForMessages(SOCKET clientSocket)
 		FD_SET(clientSocket, &readSet);
 		timeval timeout{ .tv_sec = pingTimeoutSeconds, .tv_usec = 0 };
 		int ready = select(clientSocket + 1, &readSet, nullptr, nullptr, &timeout);
-		char buffer[256];
+		char buffer[1024];
 		if (ready > 0 && FD_ISSET(clientSocket, &readSet))
 		{
 			int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -269,8 +292,7 @@ void ListenForMessages(SOCKET clientSocket)
 			{
 				file_logger->info("Received {} or {}", std::to_string(MessageType::USER_JOIN_ROOM), std::to_string(MessageType::USER_LEAVE_ROOM));
 
-
-				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
+				ChatMessage chatMessage = GetChatMessage(envelope.payload(), GetSendTypeString(envelope.sendtype()));
 				AddChatMessage(chatMessage);
 				break;
 			}
@@ -291,10 +313,11 @@ void ListenForMessages(SOCKET clientSocket)
 				case CommandType::HELP:
 				case CommandType::ROOM_LIST:
 				case CommandType::INVALID:
+				case CommandType::CREATE_ROOM:
 				{
 					file_logger->info("Received {} or {} or {}", std::to_string(CommandType::HELP), std::to_string(CommandType::ROOM_LIST), std::to_string(CommandType::INVALID));
 
-					ChatMessage chatMessage = GetChatMessage(cres.response(), "[ONLY YOU]");
+					ChatMessage chatMessage = GetChatMessage(cres.response(), GetSendTypeString(envelope.sendtype()));
 					AddChatMessage(chatMessage);
 
 					break;
@@ -305,7 +328,7 @@ void ListenForMessages(SOCKET clientSocket)
 
 					clientUser.ParseFromString(cres.response());
 
-					ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), "[ONLY YOU]");
+					ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), GetSendTypeString(envelope.sendtype()));
 					AddChatMessage(chatMessage);
 
 					break;
@@ -315,7 +338,7 @@ void ListenForMessages(SOCKET clientSocket)
 					file_logger->info("Received {}", std::to_string(CommandType::JOIN_ROOM));
 
 					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", "[ONLY YOU]");
+					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", GetSendTypeString(envelope.sendtype()));
 					AddChatMessage(chatMessage);
 
 					break;
@@ -325,7 +348,7 @@ void ListenForMessages(SOCKET clientSocket)
 					file_logger->info("Received {}", std::to_string(CommandType::LEAVE_ROOM));
 
 					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", "[ONLY YOU]");
+					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", GetSendTypeString(envelope.sendtype()));
 					AddChatMessage(chatMessage);
 
 					break;
@@ -362,7 +385,7 @@ void ListenForMessages(SOCKET clientSocket)
 				break;
 			}
 			file_logger->error("Select timeout has occured, retrying...");
-			AddChatMessage(GetChatMessage("Server timeout, retrying...", "[ONLY YOU]"));
+			AddChatMessage(GetChatMessage("Server timeout, retrying...", GetSendTypeString(MessageSendType::LOCAL)));
 			leftTries--;
 			continue;
 		}
@@ -371,6 +394,12 @@ void ListenForMessages(SOCKET clientSocket)
 
 int main()
 {
+	sendTypeMappings = {
+		{ MessageSendType::LOCAL, "[LOCAL]"},
+		{ MessageSendType::GLOBAL, "[GLOBAL]"},
+		{ MessageSendType::WITHIN_ROOM, "[ROOM]"},
+		{ MessageSendType::WITHIN_ROOM_EXCEPT_THIS, "[ROOM]"}
+	};
 	file_logger = spdlog::rotating_logger_mt("file_logger", "logs/logs.log", 1024 * 1024, 3);
 	file_logger->flush_on(spdlog::level::level_enum::info);
 	spdlog::set_default_logger(file_logger);
@@ -450,7 +479,7 @@ int main()
 	{
 		file_logger->info("Connection established! address:{} port: {}", serverConfig->address(), serverConfig->port());
 	}
-	chatMessage = GetChatMessage("/help to see commands", "[ONLY YOU]");
+	chatMessage = GetChatMessage("/help to see commands", GetSendTypeString(MessageSendType::LOCAL));
 	AddChatMessage(chatMessage);
 
 	lastPingTime = std::chrono::steady_clock::now();

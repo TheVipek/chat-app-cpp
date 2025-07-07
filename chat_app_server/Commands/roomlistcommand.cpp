@@ -4,7 +4,7 @@ void RoomListCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
 {
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
-
+    envelope.set_sendtype(MessageSendType::LOCAL);
     file_logger->info("Room List Command Process");
     CommandResponse cres{};
 
@@ -27,5 +27,5 @@ void RoomListCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     envelope.set_payload(cres.SerializeAsString());
 
     file_logger->info("Sending to client");
-    server->Send(envelope, MessageSendType::LOCAL, senderSocket);
+    server->Send(envelope, senderSocket);
 }

@@ -92,6 +92,7 @@ inline constexpr Envelope::Impl_::Impl_(
       : payload_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
+        sendtype_{static_cast< ::MessageSendType >(0)},
         type_{static_cast< ::MessageType >(0)},
         _cached_size_{0} {}
 
@@ -346,6 +347,7 @@ const ::uint32_t
         ~0u,  // no _inlined_string_donated_
         ~0u,  // no _split_
         ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::Envelope, _impl_.sendtype_),
         PROTOBUF_FIELD_OFFSET(::Envelope, _impl_.type_),
         PROTOBUF_FIELD_OFFSET(::Envelope, _impl_.payload_),
 };
@@ -385,22 +387,23 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     "er\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\"<\n\016CommandRequ"
     "est\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameter"
     "s\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\016"
-    "2\014.CommandType\022\020\n\010response\030\002 \001(\t\"7\n\010Enve"
-    "lope\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payl"
-    "oad\030\003 \001(\014*`\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n"
-    "\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\n"
-    "LEAVE_ROOM\020\004\022\r\n\tROOM_LIST\020\005*_\n\013MessageTy"
-    "pe\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_ROOM\020\001"
-    "\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PI"
-    "NG\020\005*V\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WI"
-    "THIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002"
-    "\022\n\n\006GLOBAL\020\003b\006proto3"
+    "2\014.CommandType\022\020\n\010response\030\002 \001(\t\"[\n\010Enve"
+    "lope\022\"\n\010sendType\030\001 \001(\0162\020.MessageSendType"
+    "\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030"
+    "\003 \001(\014*q\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n\004HEL"
+    "P\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAV"
+    "E_ROOM\020\004\022\r\n\tROOM_LIST\020\005\022\017\n\013CREATE_ROOM\020\006"
+    "*_\n\013MessageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USE"
+    "R_JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007CO"
+    "MMAND\020\004\022\010\n\004PING\020\005*V\n\017MessageSendType\022\t\n\005"
+    "LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_"
+    "EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    860,
+    913,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -418,9 +421,9 @@ const ::google::protobuf::EnumDescriptor* CommandType_descriptor() {
   return file_level_enum_descriptors_communication_2eproto[0];
 }
 PROTOBUF_CONSTINIT const uint32_t CommandType_internal_data_[] = {
-    393216u, 0u, };
+    458752u, 0u, };
 bool CommandType_IsValid(int value) {
-  return 0 <= value && value <= 5;
+  return 0 <= value && value <= 6;
 }
 const ::google::protobuf::EnumDescriptor* MessageType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
@@ -2482,7 +2485,13 @@ Envelope::Envelope(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_.type_ = from._impl_.type_;
+  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, sendtype_),
+           reinterpret_cast<const char *>(&from._impl_) +
+               offsetof(Impl_, sendtype_),
+           offsetof(Impl_, type_) -
+               offsetof(Impl_, sendtype_) +
+               sizeof(Impl_::type_));
 
   // @@protoc_insertion_point(copy_constructor:Envelope)
 }
@@ -2494,7 +2503,12 @@ inline PROTOBUF_NDEBUG_INLINE Envelope::Impl_::Impl_(
 
 inline void Envelope::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  _impl_.type_ = {};
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, sendtype_),
+           0,
+           offsetof(Impl_, type_) -
+               offsetof(Impl_, sendtype_) +
+               sizeof(Impl_::type_));
 }
 Envelope::~Envelope() {
   // @@protoc_insertion_point(destructor:Envelope)
@@ -2544,15 +2558,15 @@ const ::google::protobuf::internal::ClassData* Envelope::GetClassData() const {
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Envelope::_table_ = {
+const ::_pbi::TcParseTable<2, 3, 0, 0, 2> Envelope::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    3, 8,  // max_field_number, fast_idx_mask
+    3, 24,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967289,  // skipmap
+    4294967288,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
+    3,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     _class_data_.base(),
@@ -2562,6 +2576,10 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Envelope::_table_ = {
     ::_pbi::TcParser::GetTable<::Envelope>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+    // .MessageSendType sendType = 1;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Envelope, _impl_.sendtype_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(Envelope, _impl_.sendtype_)}},
     // .MessageType type = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Envelope, _impl_.type_), 63>(),
      {16, 63, 0, PROTOBUF_FIELD_OFFSET(Envelope, _impl_.type_)}},
@@ -2571,6 +2589,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Envelope::_table_ = {
   }}, {{
     65535, 65535
   }}, {{
+    // .MessageSendType sendType = 1;
+    {PROTOBUF_FIELD_OFFSET(Envelope, _impl_.sendtype_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kOpenEnum)},
     // .MessageType type = 2;
     {PROTOBUF_FIELD_OFFSET(Envelope, _impl_.type_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kOpenEnum)},
@@ -2591,7 +2612,9 @@ PROTOBUF_NOINLINE void Envelope::Clear() {
   (void) cached_has_bits;
 
   _impl_.payload_.ClearToEmpty();
-  _impl_.type_ = 0;
+  ::memset(&_impl_.sendtype_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.type_) -
+      reinterpret_cast<char*>(&_impl_.sendtype_)) + sizeof(_impl_.type_));
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -2609,6 +2632,13 @@ PROTOBUF_NOINLINE void Envelope::Clear() {
           // @@protoc_insertion_point(serialize_to_array_start:Envelope)
           ::uint32_t cached_has_bits = 0;
           (void)cached_has_bits;
+
+          // .MessageSendType sendType = 1;
+          if (this_._internal_sendtype() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                1, this_._internal_sendtype(), target);
+          }
 
           // .MessageType type = 2;
           if (this_._internal_type() != 0) {
@@ -2653,6 +2683,11 @@ PROTOBUF_NOINLINE void Envelope::Clear() {
               total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
                                               this_._internal_payload());
             }
+            // .MessageSendType sendType = 1;
+            if (this_._internal_sendtype() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_sendtype());
+            }
             // .MessageType type = 2;
             if (this_._internal_type() != 0) {
               total_size += 1 +
@@ -2674,6 +2709,9 @@ void Envelope::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google
   if (!from._internal_payload().empty()) {
     _this->_internal_set_payload(from._internal_payload());
   }
+  if (from._internal_sendtype() != 0) {
+    _this->_impl_.sendtype_ = from._impl_.sendtype_;
+  }
   if (from._internal_type() != 0) {
     _this->_impl_.type_ = from._impl_.type_;
   }
@@ -2694,7 +2732,12 @@ void Envelope::InternalSwap(Envelope* PROTOBUF_RESTRICT other) {
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.payload_, &other->_impl_.payload_, arena);
-  swap(_impl_.type_, other->_impl_.type_);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Envelope, _impl_.type_)
+      + sizeof(Envelope::_impl_.type_)
+      - PROTOBUF_FIELD_OFFSET(Envelope, _impl_.sendtype_)>(
+          reinterpret_cast<char*>(&_impl_.sendtype_),
+          reinterpret_cast<char*>(&other->_impl_.sendtype_));
 }
 
 ::google::protobuf::Metadata Envelope::GetMetadata() const {

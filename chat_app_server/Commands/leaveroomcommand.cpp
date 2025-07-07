@@ -6,7 +6,7 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
 
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
-    MessageSendType sendType;
+    envelope.set_sendtype(MessageSendType::LOCAL);
     auto user = server->GetUser(senderSocket);
     auto roomContainer = server->GetRoomContainer(user->connectedroomid());
     if (user->id() != -1 && user->connectedroomid() != -1 && roomContainer != nullptr)
@@ -15,7 +15,6 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         newUser.CopyFrom(*user);
         newUser.set_connectedroomid(-1);
 
-        sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
         std::string newUserData;
         newUser.SerializeToString(&newUserData);
@@ -28,15 +27,15 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         envelope.SerializeToString(&envelopeParsed);
 
         file_logger->info("Send to client");
-        server->Send(envelope, sendType, senderSocket);
+        server->Send(envelope, senderSocket);
 
 
-        Envelope envelope2{};
-        sendType = MessageSendType::WITHIN_ROOM_EXCEPT_THIS;
-        envelope2.set_type(MessageType::USER_LEAVE_ROOM);
+
+        envelope.set_type(MessageType::USER_LEAVE_ROOM);
+        envelope.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
         std::string msg = user->name() + "has left the channel.";
-        envelope2.set_payload(msg);
-        server->Send(envelope2, sendType, senderSocket);
+        envelope.set_payload(msg);
+        server->Send(envelope, senderSocket);
 
 
         //remove old user
@@ -44,10 +43,24 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         //override old user
         user->set_connectedroomid(-1);
         file_logger->info("Removed user {} from room {}", user->name(), roomContainer->room->name());
+
+
+        if (roomContainer->usersInRoom.size() == 0 && roomContainer->destroyOnEmpty)
+        {
+            server->RemoveRoom(roomContainer->room->name());
+
+
+            Envelope envelope{};
+            envelope.set_type(MessageType::USER_LEAVE_ROOM);
+            envelope.set_sendtype(MessageSendType::LOCAL);
+            std::string msg = "The room you have left has been destroyed, due to 0 users connected to it.";
+            envelope.set_payload(msg);
+            server->Send(envelope, senderSocket);
+        }
+
         return;
     }
-    
-    sendType = MessageSendType::LOCAL;
+
     CommandResponse cres{};
     file_logger->warn("Cannot use command");
     cres.set_response("Cannot use this command now.");
@@ -55,5 +68,5 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
     envelope.set_payload(cres.SerializeAsString());
 
     file_logger->info("Send to client");
-    server->Send(envelope, sendType, senderSocket);
+    server->Send(envelope, senderSocket);
 }

@@ -88,6 +88,7 @@ enum CommandType : int {
   JOIN_ROOM = 3,
   LEAVE_ROOM = 4,
   ROOM_LIST = 5,
+  CREATE_ROOM = 6,
   CommandType_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   CommandType_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -97,8 +98,8 @@ enum CommandType : int {
 bool CommandType_IsValid(int value);
 extern const uint32_t CommandType_internal_data_[];
 constexpr CommandType CommandType_MIN = static_cast<CommandType>(0);
-constexpr CommandType CommandType_MAX = static_cast<CommandType>(5);
-constexpr int CommandType_ARRAYSIZE = 5 + 1;
+constexpr CommandType CommandType_MAX = static_cast<CommandType>(6);
+constexpr int CommandType_ARRAYSIZE = 6 + 1;
 const ::google::protobuf::EnumDescriptor*
 CommandType_descriptor();
 template <typename T>
@@ -111,7 +112,7 @@ const std::string& CommandType_Name(T value) {
 template <>
 inline const std::string& CommandType_Name(CommandType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<CommandType_descriptor,
-                                                 0, 5>(
+                                                 0, 6>(
       static_cast<int>(value));
 }
 inline bool CommandType_Parse(absl::string_view name, CommandType* value) {
@@ -812,6 +813,7 @@ class Envelope final : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
   enum : int {
     kPayloadFieldNumber = 3,
+    kSendTypeFieldNumber = 1,
     kTypeFieldNumber = 2,
   };
   // bytes payload = 3;
@@ -830,6 +832,16 @@ class Envelope final : public ::google::protobuf::Message
   std::string* _internal_mutable_payload();
 
   public:
+  // .MessageSendType sendType = 1;
+  void clear_sendtype() ;
+  ::MessageSendType sendtype() const;
+  void set_sendtype(::MessageSendType value);
+
+  private:
+  ::MessageSendType _internal_sendtype() const;
+  void _internal_set_sendtype(::MessageSendType value);
+
+  public:
   // .MessageType type = 2;
   void clear_type() ;
   ::MessageType type() const;
@@ -845,7 +857,7 @@ class Envelope final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 3, 0,
       0, 2>
       _table_;
 
@@ -864,6 +876,7 @@ class Envelope final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Envelope& from_msg);
     ::google::protobuf::internal::ArenaStringPtr payload_;
+    int sendtype_;
     int type_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -2761,6 +2774,28 @@ inline void CommandResponse::set_allocated_response(std::string* value) {
 // -------------------------------------------------------------------
 
 // Envelope
+
+// .MessageSendType sendType = 1;
+inline void Envelope::clear_sendtype() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.sendtype_ = 0;
+}
+inline ::MessageSendType Envelope::sendtype() const {
+  // @@protoc_insertion_point(field_get:Envelope.sendType)
+  return _internal_sendtype();
+}
+inline void Envelope::set_sendtype(::MessageSendType value) {
+  _internal_set_sendtype(value);
+  // @@protoc_insertion_point(field_set:Envelope.sendType)
+}
+inline ::MessageSendType Envelope::_internal_sendtype() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::MessageSendType>(_impl_.sendtype_);
+}
+inline void Envelope::_internal_set_sendtype(::MessageSendType value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.sendtype_ = value;
+}
 
 // .MessageType type = 2;
 inline void Envelope::clear_type() {
