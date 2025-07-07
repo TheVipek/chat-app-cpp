@@ -120,6 +120,7 @@ enum MessageType : int {
   USER_JOIN_ROOM = 1,
   USER_LEAVE_ROOM = 2,
   COMMAND = 4,
+  PING = 5,
   MessageType_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   MessageType_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -129,8 +130,8 @@ enum MessageType : int {
 bool MessageType_IsValid(int value);
 extern const uint32_t MessageType_internal_data_[];
 constexpr MessageType MessageType_MIN = static_cast<MessageType>(0);
-constexpr MessageType MessageType_MAX = static_cast<MessageType>(4);
-constexpr int MessageType_ARRAYSIZE = 4 + 1;
+constexpr MessageType MessageType_MAX = static_cast<MessageType>(5);
+constexpr int MessageType_ARRAYSIZE = 5 + 1;
 const ::google::protobuf::EnumDescriptor*
 MessageType_descriptor();
 template <typename T>
@@ -143,7 +144,7 @@ const std::string& MessageType_Name(T value) {
 template <>
 inline const std::string& MessageType_Name(MessageType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<MessageType_descriptor,
-                                                 0, 4>(
+                                                 0, 5>(
       static_cast<int>(value));
 }
 inline bool MessageType_Parse(absl::string_view name, MessageType* value) {

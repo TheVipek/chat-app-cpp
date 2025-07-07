@@ -347,18 +347,18 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     "\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030\003"
     " \001(\014*`\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n\004HELP"
     "\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE"
-    "_ROOM\020\004\022\r\n\tROOM_LIST\020\005*U\n\013MessageType\022\020\n"
+    "_ROOM\020\004\022\r\n\tROOM_LIST\020\005*_\n\013MessageType\022\020\n"
     "\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_ROOM\020\001\022\023\n\017U"
-    "SER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004*V\n\017Message"
-    "SendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033\n\027"
-    "WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003b\006p"
-    "roto3"
+    "SER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PING\020\005*"
+    "V\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_"
+    "ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006G"
+    "LOBAL\020\003b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    765,
+    775,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -385,9 +385,9 @@ const ::google::protobuf::EnumDescriptor* MessageType_descriptor() {
   return file_level_enum_descriptors_communication_2eproto[1];
 }
 PROTOBUF_CONSTINIT const uint32_t MessageType_internal_data_[] = {
-    196608u, 32u, 2u, };
+    196608u, 32u, 6u, };
 bool MessageType_IsValid(int value) {
-  return 0 <= value && value <= 4 && ((23u >> value) & 1) != 0;
+  return 0 <= value && value <= 5 && ((55u >> value) & 1) != 0;
 }
 const ::google::protobuf::EnumDescriptor* MessageSendType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);

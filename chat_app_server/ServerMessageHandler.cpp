@@ -61,6 +61,21 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
             }
             break;
         }
+        case MessageType::PING: 
+        {
+            if (envelope.type() != MessageType::PING)
+            {
+                closesocket(senderSocket);
+                server->connectedUsers.erase(senderSocket);
+                server->lastPingTime.erase(senderSocket);
+            }
+            else
+            {
+                file_logger->info("Pong socket {}", senderSocket);
+            }
+
+            break;
+        }
         case MessageType::COMMAND:
         {
             file_logger->info("Handling command");

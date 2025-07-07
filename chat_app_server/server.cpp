@@ -94,6 +94,41 @@ bool Server::IsInitialized()
     return initialized;
 }
 
+
+
+void Server::PingClients() {
+    Envelope ping_envelope{};
+    ping_envelope.set_type(MessageType::PING);
+    std::string ping_envelope_str;
+    ping_envelope.SerializeToString(&ping_envelope_str);
+
+    auto now = std::chrono::steady_clock::now();
+
+    std::vector<SOCKET> socketsToRemove;
+
+    for (int i = 0; i < readSet.fd_count; i++) {
+        SOCKET soc = readSet.fd_array[i];
+        if (now - lastPingTime[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
+            file_logger->info("Ping socket {}", soc);
+            bool failed = Send(ping_envelope, MessageSendType::LOCAL, soc).size() > 0;
+            if (failed)
+            {
+                file_logger->warn("SOCKET {} marked as to be kicked, due to network issues.", soc);
+                socketsToRemove.push_back(soc);
+                continue;
+            }
+            lastPingTime[soc] = now; // Update last PING time
+        }
+    }
+
+    for (auto soc : socketsToRemove)
+    {
+        connectedUsers.erase(soc);
+        lastPingTime.erase(soc);
+        closesocket(soc);
+    }
+}
+
 void Server::Run() {
     if (!initialized)
         return;
@@ -196,6 +231,8 @@ void Server::Run() {
                 }
             }
         }
+
+        PingClients();
     }
 }
 
@@ -203,8 +240,10 @@ void Server::Stop() {
     if (!initialized)
         return;
 }
-void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket)
+std::vector<SOCKET> Server::Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket)
 {
+    std::vector<SOCKET> failedSockets;
+
     std::string envelopeParsed;
     envelope.SerializeToString(&envelopeParsed);
     if (msgSendType == MessageSendType::LOCAL)
@@ -212,6 +251,7 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
         if (send(senderSocket, envelopeParsed.data(), envelopeParsed.size(), 0) == SOCKET_ERROR)
         {
             file_logger->error("Problem with sending data to socket {} error {} ", senderSocket , WSAGetLastError());
+            failedSockets.push_back(senderSocket);
         }
     }
     else if (msgSendType == MessageSendType::WITHIN_ROOM)
@@ -231,6 +271,8 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
                     if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                     {
                         file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
+                        failedSockets.push_back(dest);
+
                     }
                 }
             }
@@ -252,6 +294,8 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
                     if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                     {
                         file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
+                        failedSockets.push_back(dest);
+
                     }
                 }
             }
@@ -269,10 +313,14 @@ void Server::Send(const Envelope& envelope, const MessageSendType msgSendType, S
                 if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
                 {
                     file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
+                    failedSockets.push_back(dest);
+
                 }
             }
         }
     }
+
+    return failedSockets;
 }
 int Server::GetNewUserIdentifier() {
     int uniqueID = (rand() % 10000000);

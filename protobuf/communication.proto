@@ -52,6 +52,7 @@ enum MessageType {
     USER_JOIN_ROOM = 1;
     USER_LEAVE_ROOM = 2;
     COMMAND = 4;
+    PING = 5;
 }
 
 enum MessageSendType {

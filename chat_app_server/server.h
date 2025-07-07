@@ -20,7 +20,7 @@ public:
 	bool IsInitialized();
 	void Run();
 	void Stop();
-	void Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket);
+	std::vector<SOCKET> Send(const Envelope& envelope, const MessageSendType msgSendType, SOCKET senderSocket);
 	int GetNewUserIdentifier();
 	bool HasRoom(std::string roomName);
 	RoomContainer* GetRoomContainer(std::string roomName);
@@ -46,4 +46,8 @@ protected:
 	char messageBuffer[256];
 	int receivedBytes;
 	int addrlen;
+
+	std::unordered_map<SOCKET, std::chrono::steady_clock::time_point> lastPingTime;
+	int pingTimeoutSeconds = 5;
+	void PingClients();
 };

@@ -41,9 +41,11 @@ SOCKET clientSocket;
 std::string currentInput;
 ClientUser clientUser;
 std::vector<ClientChatMessage> chatHistory;
-
+int pingTimeoutSeconds = 5;
+std::chrono::steady_clock::time_point lastPingTime;
 std::mutex chatMutex;
 std::thread uiThread;
+std::thread pingThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
 
@@ -227,17 +229,17 @@ void ListenForMessages(SOCKET clientSocket)
 {
 
 	while (true) {
+
 		char buffer[256];
 		int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
 		if (receivedBytes <= 0) {
-			if (receivedBytes == 0) {
-				if (LOGGING)
-				{
-					file_logger->error("Server disconnected");
-				}
-				EndProcess();
-				break;
+			if (LOGGING)
+			{
+				file_logger->warn("recv bytes: {}", receivedBytes);
+				file_logger->error("Server disconnected");
 			}
+			EndProcess();
+			break;
 		}
 		else {
 
@@ -264,6 +266,12 @@ void ListenForMessages(SOCKET clientSocket)
 
 				ChatMessage chatMessage = GetChatMessage(envelope.payload(), "[EVERYONE]");
 				AddChatMessage(chatMessage);
+				break;
+			}
+			case MessageType::PING:
+			{
+				SendToServer(envelope);
+				lastPingTime = std::chrono::steady_clock::now();
 				break;
 			}
 			case MessageType::COMMAND: 
@@ -323,11 +331,21 @@ void ListenForMessages(SOCKET clientSocket)
 			default:
 				break;
 			}
+		
+			auto now = std::chrono::steady_clock::now();
+			if (now - lastPingTime > std::chrono::seconds(pingTimeoutSeconds))
+			{
+				if (LOGGING)
+				{
+					file_logger->error("Server disconnected");
+				}
+				//didn't received PING for timeout time.
+				EndProcess();
+				break;
+			}
 		}
 	}
 }
-
-
 
 int main()
 {
@@ -400,6 +418,7 @@ int main()
 	chatMessage = GetChatMessage("/help to see commands", "[ONLY YOU]");
 	AddChatMessage(chatMessage);
 
+	lastPingTime = std::chrono::steady_clock::now();
 
 
 	syncChatThread = std::thread(ListenForMessages, clientSocket);
