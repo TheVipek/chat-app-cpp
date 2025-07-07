@@ -81,6 +81,40 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 
+enum ChatMessageType : int {
+  MESSAGE_IN_ROOM = 0,
+  INFORMATION = 1,
+  WHISPER = 2,
+  ChatMessageType_INT_MIN_SENTINEL_DO_NOT_USE_ =
+      std::numeric_limits<::int32_t>::min(),
+  ChatMessageType_INT_MAX_SENTINEL_DO_NOT_USE_ =
+      std::numeric_limits<::int32_t>::max(),
+};
+
+bool ChatMessageType_IsValid(int value);
+extern const uint32_t ChatMessageType_internal_data_[];
+constexpr ChatMessageType ChatMessageType_MIN = static_cast<ChatMessageType>(0);
+constexpr ChatMessageType ChatMessageType_MAX = static_cast<ChatMessageType>(2);
+constexpr int ChatMessageType_ARRAYSIZE = 2 + 1;
+const ::google::protobuf::EnumDescriptor*
+ChatMessageType_descriptor();
+template <typename T>
+const std::string& ChatMessageType_Name(T value) {
+  static_assert(std::is_same<T, ChatMessageType>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to ChatMessageType_Name().");
+  return ChatMessageType_Name(static_cast<ChatMessageType>(value));
+}
+template <>
+inline const std::string& ChatMessageType_Name(ChatMessageType value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<ChatMessageType_descriptor,
+                                                 0, 2>(
+      static_cast<int>(value));
+}
+inline bool ChatMessageType_Parse(absl::string_view name, ChatMessageType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<ChatMessageType>(
+      ChatMessageType_descriptor(), name, value);
+}
 enum CommandType : int {
   INVALID = 0,
   HELP = 1,
@@ -1682,6 +1716,7 @@ class ChatMessage final : public ::google::protobuf::Message
   enum : int {
     kSenderFieldNumber = 1,
     kMessageFieldNumber = 2,
+    kMessageTypeFieldNumber = 3,
   };
   // string sender = 1;
   void clear_sender() ;
@@ -1715,12 +1750,22 @@ class ChatMessage final : public ::google::protobuf::Message
   std::string* _internal_mutable_message();
 
   public:
+  // .ChatMessageType messageType = 3;
+  void clear_messagetype() ;
+  ::ChatMessageType messagetype() const;
+  void set_messagetype(::ChatMessageType value);
+
+  private:
+  ::ChatMessageType _internal_messagetype() const;
+  void _internal_set_messagetype(::ChatMessageType value);
+
+  public:
   // @@protoc_insertion_point(class_scope:ChatMessage)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 3, 0,
       33, 2>
       _table_;
 
@@ -1740,6 +1785,7 @@ class ChatMessage final : public ::google::protobuf::Message
                           const ChatMessage& from_msg);
     ::google::protobuf::internal::ArenaStringPtr sender_;
     ::google::protobuf::internal::ArenaStringPtr message_;
+    int messagetype_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -2581,6 +2627,28 @@ inline void ChatMessage::set_allocated_message(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:ChatMessage.message)
 }
 
+// .ChatMessageType messageType = 3;
+inline void ChatMessage::clear_messagetype() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.messagetype_ = 0;
+}
+inline ::ChatMessageType ChatMessage::messagetype() const {
+  // @@protoc_insertion_point(field_get:ChatMessage.messageType)
+  return _internal_messagetype();
+}
+inline void ChatMessage::set_messagetype(::ChatMessageType value) {
+  _internal_set_messagetype(value);
+  // @@protoc_insertion_point(field_set:ChatMessage.messageType)
+}
+inline ::ChatMessageType ChatMessage::_internal_messagetype() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::ChatMessageType>(_impl_.messagetype_);
+}
+inline void ChatMessage::_internal_set_messagetype(::ChatMessageType value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.messagetype_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // CommandRequest
@@ -2877,6 +2945,12 @@ inline void Envelope::set_allocated_payload(std::string* value) {
 namespace google {
 namespace protobuf {
 
+template <>
+struct is_proto_enum<::ChatMessageType> : std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor<::ChatMessageType>() {
+  return ::ChatMessageType_descriptor();
+}
 template <>
 struct is_proto_enum<::CommandType> : std::true_type {};
 template <>

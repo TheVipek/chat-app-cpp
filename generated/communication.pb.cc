@@ -209,6 +209,7 @@ inline constexpr ChatMessage::Impl_::Impl_(
         message_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
+        messagetype_{static_cast< ::ChatMessageType >(0)},
         _cached_size_{0} {}
 
 template <typename>
@@ -256,7 +257,7 @@ struct AdvancedServerConfigDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AdvancedServerConfigDefaultTypeInternal _AdvancedServerConfig_default_instance_;
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_communication_2eproto[3];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_communication_2eproto[4];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_communication_2eproto = nullptr;
 const ::uint32_t
@@ -319,6 +320,7 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::ChatMessage, _impl_.sender_),
         PROTOBUF_FIELD_OFFSET(::ChatMessage, _impl_.message_),
+        PROTOBUF_FIELD_OFFSET(::ChatMessage, _impl_.messagetype_),
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::CommandRequest, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -359,9 +361,9 @@ static const ::_pbi::MigrationSchema
         {26, -1, -1, sizeof(::SimpleServerConfig)},
         {36, -1, -1, sizeof(::ClientUser)},
         {47, -1, -1, sizeof(::ChatMessage)},
-        {57, -1, -1, sizeof(::CommandRequest)},
-        {67, -1, -1, sizeof(::CommandResponse)},
-        {77, -1, -1, sizeof(::Envelope)},
+        {58, -1, -1, sizeof(::CommandRequest)},
+        {68, -1, -1, sizeof(::CommandResponse)},
+        {78, -1, -1, sizeof(::Envelope)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_AdvancedServerConfig_default_instance_._instance,
@@ -383,27 +385,30 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     "\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServerConfi"
     "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"\?\n\nClie"
     "ntUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017conn"
-    "ectedRoomID\030\003 \001(\005\".\n\013ChatMessage\022\016\n\006send"
-    "er\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\"<\n\016CommandRequ"
-    "est\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameter"
-    "s\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\016"
-    "2\014.CommandType\022\020\n\010response\030\002 \001(\t\"[\n\010Enve"
-    "lope\022\"\n\010sendType\030\001 \001(\0162\020.MessageSendType"
-    "\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030"
-    "\003 \001(\014*q\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n\004HEL"
-    "P\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAV"
-    "E_ROOM\020\004\022\r\n\tROOM_LIST\020\005\022\017\n\013CREATE_ROOM\020\006"
-    "*_\n\013MessageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USE"
-    "R_JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007CO"
-    "MMAND\020\004\022\010\n\004PING\020\005*V\n\017MessageSendType\022\t\n\005"
-    "LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_"
-    "EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003b\006proto3"
+    "ectedRoomID\030\003 \001(\005\"U\n\013ChatMessage\022\016\n\006send"
+    "er\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\022%\n\013messageType"
+    "\030\003 \001(\0162\020.ChatMessageType\"<\n\016CommandReque"
+    "st\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameters"
+    "\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\0162"
+    "\014.CommandType\022\020\n\010response\030\002 \001(\t\"[\n\010Envel"
+    "ope\022\"\n\010sendType\030\001 \001(\0162\020.MessageSendType\022"
+    "\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030\003"
+    " \001(\014*D\n\017ChatMessageType\022\023\n\017MESSAGE_IN_RO"
+    "OM\020\000\022\017\n\013INFORMATION\020\001\022\013\n\007WHISPER\020\002*q\n\013Co"
+    "mmandType\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICK"
+    "NAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n"
+    "\tROOM_LIST\020\005\022\017\n\013CREATE_ROOM\020\006*_\n\013Message"
+    "Type\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_ROOM"
+    "\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004"
+    "PING\020\005*V\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013"
+    "WITHIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS"
+    "\020\002\022\n\n\006GLOBAL\020\003b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    913,
+    1022,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -416,9 +421,18 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_
     file_level_enum_descriptors_communication_2eproto,
     file_level_service_descriptors_communication_2eproto,
 };
-const ::google::protobuf::EnumDescriptor* CommandType_descriptor() {
+const ::google::protobuf::EnumDescriptor* ChatMessageType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
   return file_level_enum_descriptors_communication_2eproto[0];
+}
+PROTOBUF_CONSTINIT const uint32_t ChatMessageType_internal_data_[] = {
+    196608u, 0u, };
+bool ChatMessageType_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+const ::google::protobuf::EnumDescriptor* CommandType_descriptor() {
+  ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
+  return file_level_enum_descriptors_communication_2eproto[1];
 }
 PROTOBUF_CONSTINIT const uint32_t CommandType_internal_data_[] = {
     458752u, 0u, };
@@ -427,7 +441,7 @@ bool CommandType_IsValid(int value) {
 }
 const ::google::protobuf::EnumDescriptor* MessageType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
-  return file_level_enum_descriptors_communication_2eproto[1];
+  return file_level_enum_descriptors_communication_2eproto[2];
 }
 PROTOBUF_CONSTINIT const uint32_t MessageType_internal_data_[] = {
     196608u, 32u, 6u, };
@@ -436,7 +450,7 @@ bool MessageType_IsValid(int value) {
 }
 const ::google::protobuf::EnumDescriptor* MessageSendType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
-  return file_level_enum_descriptors_communication_2eproto[2];
+  return file_level_enum_descriptors_communication_2eproto[3];
 }
 PROTOBUF_CONSTINIT const uint32_t MessageSendType_internal_data_[] = {
     262144u, 0u, };
@@ -1694,6 +1708,7 @@ ChatMessage::ChatMessage(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  _impl_.messagetype_ = from._impl_.messagetype_;
 
   // @@protoc_insertion_point(copy_constructor:ChatMessage)
 }
@@ -1706,6 +1721,7 @@ inline PROTOBUF_NDEBUG_INLINE ChatMessage::Impl_::Impl_(
 
 inline void ChatMessage::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.messagetype_ = {};
 }
 ChatMessage::~ChatMessage() {
   // @@protoc_insertion_point(destructor:ChatMessage)
@@ -1756,15 +1772,15 @@ const ::google::protobuf::internal::ClassData* ChatMessage::GetClassData() const
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 33, 2> ChatMessage::_table_ = {
+const ::_pbi::TcParseTable<2, 3, 0, 33, 2> ChatMessage::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
+    3, 24,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967292,  // skipmap
+    4294967288,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
+    3,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     _class_data_.base(),
@@ -1774,12 +1790,16 @@ const ::_pbi::TcParseTable<1, 2, 0, 33, 2> ChatMessage::_table_ = {
     ::_pbi::TcParser::GetTable<::ChatMessage>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // string message = 2;
-    {::_pbi::TcParser::FastUS1,
-     {18, 63, 0, PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.message_)}},
+    {::_pbi::TcParser::MiniParse, {}},
     // string sender = 1;
     {::_pbi::TcParser::FastUS1,
      {10, 63, 0, PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.sender_)}},
+    // string message = 2;
+    {::_pbi::TcParser::FastUS1,
+     {18, 63, 0, PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.message_)}},
+    // .ChatMessageType messageType = 3;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(ChatMessage, _impl_.messagetype_), 63>(),
+     {24, 63, 0, PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.messagetype_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1789,6 +1809,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 33, 2> ChatMessage::_table_ = {
     // string message = 2;
     {PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.message_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // .ChatMessageType messageType = 3;
+    {PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.messagetype_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kOpenEnum)},
   }},
   // no aux_entries
   {{
@@ -1808,6 +1831,7 @@ PROTOBUF_NOINLINE void ChatMessage::Clear() {
 
   _impl_.sender_.ClearToEmpty();
   _impl_.message_.ClearToEmpty();
+  _impl_.messagetype_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -1840,6 +1864,13 @@ PROTOBUF_NOINLINE void ChatMessage::Clear() {
             ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
                 _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "ChatMessage.message");
             target = stream->WriteStringMaybeAliased(2, _s, target);
+          }
+
+          // .ChatMessageType messageType = 3;
+          if (this_._internal_messagetype() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                3, this_._internal_messagetype(), target);
           }
 
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -1877,6 +1908,11 @@ PROTOBUF_NOINLINE void ChatMessage::Clear() {
               total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                               this_._internal_message());
             }
+            // .ChatMessageType messageType = 3;
+            if (this_._internal_messagetype() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_messagetype());
+            }
           }
           return this_.MaybeComputeUnknownFieldsSize(total_size,
                                                      &this_._impl_._cached_size_);
@@ -1896,6 +1932,9 @@ void ChatMessage::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   if (!from._internal_message().empty()) {
     _this->_internal_set_message(from._internal_message());
   }
+  if (from._internal_messagetype() != 0) {
+    _this->_impl_.messagetype_ = from._impl_.messagetype_;
+  }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1914,6 +1953,7 @@ void ChatMessage::InternalSwap(ChatMessage* PROTOBUF_RESTRICT other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.sender_, &other->_impl_.sender_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.message_, &other->_impl_.message_, arena);
+  swap(_impl_.messagetype_, other->_impl_.messagetype_);
 }
 
 ::google::protobuf::Metadata ChatMessage::GetMetadata() const {

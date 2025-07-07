@@ -37,6 +37,12 @@ message ClientUser {
 message ChatMessage {
     string sender = 1;
     string message = 2;
+    ChatMessageType messageType = 3;
+}
+enum ChatMessageType {
+    MESSAGE_IN_ROOM = 0;
+    INFORMATION = 1;
+    WHISPER = 2;
 }
 
 enum CommandType {
