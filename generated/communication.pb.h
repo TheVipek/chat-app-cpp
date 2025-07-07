@@ -553,6 +553,7 @@ class Room final : public ::google::protobuf::Message
     kPasswordFieldNumber = 4,
     kIdFieldNumber = 1,
     kHasPasswordFieldNumber = 3,
+    kIsPublicFieldNumber = 6,
     kMaxConnectionsFieldNumber = 5,
   };
   // string name = 2;
@@ -607,6 +608,16 @@ class Room final : public ::google::protobuf::Message
   void _internal_set_haspassword(bool value);
 
   public:
+  // bool isPublic = 6;
+  void clear_ispublic() ;
+  bool ispublic() const;
+  void set_ispublic(bool value);
+
+  private:
+  bool _internal_ispublic() const;
+  void _internal_set_ispublic(bool value);
+
+  public:
   // int32 maxConnections = 5;
   void clear_maxconnections() ;
   ::int32_t maxconnections() const;
@@ -622,7 +633,7 @@ class Room final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 0,
+      3, 6, 0,
       25, 2>
       _table_;
 
@@ -644,6 +655,7 @@ class Room final : public ::google::protobuf::Message
     ::google::protobuf::internal::ArenaStringPtr password_;
     ::int32_t id_;
     bool haspassword_;
+    bool ispublic_;
     ::int32_t maxconnections_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -2262,6 +2274,28 @@ inline ::int32_t Room::_internal_maxconnections() const {
 inline void Room::_internal_set_maxconnections(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.maxconnections_ = value;
+}
+
+// bool isPublic = 6;
+inline void Room::clear_ispublic() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ispublic_ = false;
+}
+inline bool Room::ispublic() const {
+  // @@protoc_insertion_point(field_get:Room.isPublic)
+  return _internal_ispublic();
+}
+inline void Room::set_ispublic(bool value) {
+  _internal_set_ispublic(value);
+  // @@protoc_insertion_point(field_set:Room.isPublic)
+}
+inline bool Room::_internal_ispublic() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.ispublic_;
+}
+inline void Room::_internal_set_ispublic(bool value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ispublic_ = value;
 }
 
 // -------------------------------------------------------------------

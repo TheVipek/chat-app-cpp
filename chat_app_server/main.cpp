@@ -51,7 +51,8 @@ int main()
 
     roomsInfo += "--- Room Configuration ---\n";
     for (const auto& room : serverConfig->rooms()) {
-        roomsInfo += std::format("  ID: {}, Name: {}, Has Password: {}, Password: {}, MaxConnections: {}\n", room.id(), room.name(), (room.haspassword() ? "true" : "false"), room.password(), room.maxconnections());
+        roomsInfo += std::format("  ID: {}, Name: {}, Has Password: {}, Password: {}, MaxConnections: {} IsPublic:{}\n", room.id(), room.name(), (room.haspassword() ? "true" : "false"), room.password(), room.maxconnections(), (room.ispublic() ? "true" : "false"));
+
     }
     file_logger->info(roomsInfo);
 

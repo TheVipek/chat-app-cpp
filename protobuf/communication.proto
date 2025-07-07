@@ -13,6 +13,7 @@ message Room {
     bool hasPassword = 3;
     string password = 4;
     int32 maxConnections = 5;
+    bool isPublic = 6;
 }
 
 //----------------------------------------------CLIENT<--->SERVER----------------------------------------------

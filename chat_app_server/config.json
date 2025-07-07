@@ -9,28 +9,32 @@
             "name": "#Lobby",
             "hasPassword": false,
             "password": "",
-            "maxConnections": 0
+            "maxConnections": 0,
+            "isPublic": true
         },
         {
             "id": 102,
             "name": "#PrivateMeeting",
             "hasPassword": true,
             "password": "securePass123",
-            "maxConnections": 0
+            "maxConnections": 0,
+            "isPublic": true
         },
         {
             "id": 103,
             "name": "#Talk",
             "hasPassword": false,
             "password": "",
-            "maxConnections": 10
+            "maxConnections": 10,
+            "isPublic": true
         },
         {
             "id": 104,
             "name": "#AdminOffice",
             "hasPassword": true,
             "password": "adminOnly",
-            "maxConnections": 8
+            "maxConnections": 8,
+            "isPublic": false
         }
     ]
 }

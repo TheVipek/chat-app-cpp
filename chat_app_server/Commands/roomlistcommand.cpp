@@ -14,9 +14,12 @@ void RoomListCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     auto roomContainers = server->GetRoomContainers();
     for (auto roomContainer : roomContainers) {
         auto room = roomContainer->room;
-        auto connections = roomContainer->usersInRoom;
-        std::string needPassword = room->haspassword() ? "*" : "";
-        response += room->name() + " Password(" + needPassword + ") Connections:" + std::to_string(connections.size()) + "/" + std::to_string(room->maxconnections()) + "\n";
+        if (room->ispublic())
+        {
+            auto connections = roomContainer->usersInRoom;
+            std::string needPassword = room->haspassword() ? "*" : "";
+            response += room->name() + " Password(" + needPassword + ") Connections:" + std::to_string(connections.size()) + "/" + std::to_string(room->maxconnections()) + "\n";
+        }
     }
 
     cres.set_response(response);

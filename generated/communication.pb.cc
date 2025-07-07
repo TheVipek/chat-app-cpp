@@ -63,6 +63,7 @@ inline constexpr Room::Impl_::Impl_(
             ::_pbi::ConstantInitialized()),
         id_{0},
         haspassword_{false},
+        ispublic_{false},
         maxconnections_{0},
         _cached_size_{0} {}
 
@@ -285,6 +286,7 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.haspassword_),
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.password_),
         PROTOBUF_FIELD_OFFSET(::Room, _impl_.maxconnections_),
+        PROTOBUF_FIELD_OFFSET(::Room, _impl_.ispublic_),
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::SimpleServerConfig, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -352,12 +354,12 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::AdvancedServerConfig)},
         {12, -1, -1, sizeof(::Room)},
-        {25, -1, -1, sizeof(::SimpleServerConfig)},
-        {35, -1, -1, sizeof(::ClientUser)},
-        {46, -1, -1, sizeof(::ChatMessage)},
-        {56, -1, -1, sizeof(::CommandRequest)},
-        {66, -1, -1, sizeof(::CommandResponse)},
-        {76, -1, -1, sizeof(::Envelope)},
+        {26, -1, -1, sizeof(::SimpleServerConfig)},
+        {36, -1, -1, sizeof(::ClientUser)},
+        {47, -1, -1, sizeof(::ChatMessage)},
+        {57, -1, -1, sizeof(::CommandRequest)},
+        {67, -1, -1, sizeof(::CommandResponse)},
+        {77, -1, -1, sizeof(::Envelope)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_AdvancedServerConfig_default_instance_._instance,
@@ -373,32 +375,32 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     protodesc_cold) = {
     "\n\023communication.proto\"Q\n\024AdvancedServerC"
     "onfig\022#\n\006server\030\001 \001(\0132\023.SimpleServerConf"
-    "ig\022\024\n\005rooms\030\002 \003(\0132\005.Room\"_\n\004Room\022\n\n\002id\030\001"
+    "ig\022\024\n\005rooms\030\002 \003(\0132\005.Room\"q\n\004Room\022\n\n\002id\030\001"
     " \001(\005\022\014\n\004name\030\002 \001(\t\022\023\n\013hasPassword\030\003 \001(\010\022"
     "\020\n\010password\030\004 \001(\t\022\026\n\016maxConnections\030\005 \001("
-    "\005\"3\n\022SimpleServerConfig\022\017\n\007address\030\001 \001(\t"
-    "\022\014\n\004port\030\002 \001(\005\"\?\n\nClientUser\022\n\n\002id\030\001 \001(\005"
-    "\022\014\n\004name\030\002 \001(\t\022\027\n\017connectedRoomID\030\003 \001(\005\""
-    ".\n\013ChatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007messag"
-    "e\030\002 \001(\t\"<\n\016CommandRequest\022\017\n\007request\030\001 \001"
-    "(\t\022\031\n\021requestParameters\030\002 \003(\t\"\?\n\017Command"
-    "Response\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n\010"
-    "response\030\002 \001(\t\"7\n\010Envelope\022\032\n\004type\030\002 \001(\016"
-    "2\014.MessageType\022\017\n\007payload\030\003 \001(\014*`\n\013Comma"
-    "ndType\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAM"
-    "E\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tRO"
-    "OM_LIST\020\005*_\n\013MessageType\022\020\n\014CHAT_MESSAGE"
-    "\020\000\022\022\n\016USER_JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROO"
-    "M\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PING\020\005*V\n\017MessageSen"
-    "dType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033\n\027WIT"
-    "HIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003b\006prot"
-    "o3"
+    "\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServerConfi"
+    "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"\?\n\nClie"
+    "ntUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017conn"
+    "ectedRoomID\030\003 \001(\005\".\n\013ChatMessage\022\016\n\006send"
+    "er\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\"<\n\016CommandRequ"
+    "est\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameter"
+    "s\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\016"
+    "2\014.CommandType\022\020\n\010response\030\002 \001(\t\"7\n\010Enve"
+    "lope\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payl"
+    "oad\030\003 \001(\014*`\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n"
+    "\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\n"
+    "LEAVE_ROOM\020\004\022\r\n\tROOM_LIST\020\005*_\n\013MessageTy"
+    "pe\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_ROOM\020\001"
+    "\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PI"
+    "NG\020\005*V\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WI"
+    "THIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002"
+    "\022\n\n\006GLOBAL\020\003b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    842,
+    860,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -844,15 +846,15 @@ const ::google::protobuf::internal::ClassData* Room::GetClassData() const {
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 0, 25, 2> Room::_table_ = {
+const ::_pbi::TcParseTable<3, 6, 0, 25, 2> Room::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    5, 56,  // max_field_number, fast_idx_mask
+    6, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967264,  // skipmap
+    4294967232,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    5,  // num_field_entries
+    6,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     _class_data_.base(),
@@ -878,7 +880,9 @@ const ::_pbi::TcParseTable<3, 5, 0, 25, 2> Room::_table_ = {
     // int32 maxConnections = 5;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Room, _impl_.maxconnections_), 63>(),
      {40, 63, 0, PROTOBUF_FIELD_OFFSET(Room, _impl_.maxconnections_)}},
-    {::_pbi::TcParser::MiniParse, {}},
+    // bool isPublic = 6;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(Room, _impl_.ispublic_), 63>(),
+     {48, 63, 0, PROTOBUF_FIELD_OFFSET(Room, _impl_.ispublic_)}},
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
@@ -898,6 +902,9 @@ const ::_pbi::TcParseTable<3, 5, 0, 25, 2> Room::_table_ = {
     // int32 maxConnections = 5;
     {PROTOBUF_FIELD_OFFSET(Room, _impl_.maxconnections_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
+    // bool isPublic = 6;
+    {PROTOBUF_FIELD_OFFSET(Room, _impl_.ispublic_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kBool)},
   }},
   // no aux_entries
   {{
@@ -975,6 +982,13 @@ PROTOBUF_NOINLINE void Room::Clear() {
                     stream, this_._internal_maxconnections(), target);
           }
 
+          // bool isPublic = 6;
+          if (this_._internal_ispublic() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteBoolToArray(
+                6, this_._internal_ispublic(), target);
+          }
+
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -1019,6 +1033,10 @@ PROTOBUF_NOINLINE void Room::Clear() {
             if (this_._internal_haspassword() != 0) {
               total_size += 2;
             }
+            // bool isPublic = 6;
+            if (this_._internal_ispublic() != 0) {
+              total_size += 2;
+            }
             // int32 maxConnections = 5;
             if (this_._internal_maxconnections() != 0) {
               total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
@@ -1048,6 +1066,9 @@ void Room::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
   }
   if (from._internal_haspassword() != 0) {
     _this->_impl_.haspassword_ = from._impl_.haspassword_;
+  }
+  if (from._internal_ispublic() != 0) {
+    _this->_impl_.ispublic_ = from._impl_.ispublic_;
   }
   if (from._internal_maxconnections() != 0) {
     _this->_impl_.maxconnections_ = from._impl_.maxconnections_;
