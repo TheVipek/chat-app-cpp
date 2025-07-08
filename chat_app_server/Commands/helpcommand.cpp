@@ -5,7 +5,7 @@ void HelpCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket,
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     envelope.set_sendtype(MessageSendType::LOCAL);
-    file_logger->info("Help Command Process");
+    SPDLOG_LOGGER_INFO(file_logger, "Help Command Process");
     std::string helperOutput;
     helperOutput += "AVAILABLE COMMANDS\n";
     helperOutput += "/setnick NEW_NICKNAME - set your nickname\n";
@@ -19,6 +19,6 @@ void HelpCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket,
     envelope.set_payload(cres.SerializeAsString());
 
 
-    file_logger->info("Sending to client.");
+    SPDLOG_LOGGER_INFO(file_logger, "Sending to client.");
     server->Send(envelope, senderSocket);
 }

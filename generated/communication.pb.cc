@@ -390,7 +390,7 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     "\030\003 \001(\0162\020.ChatMessageType\"<\n\016CommandReque"
     "st\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameters"
     "\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\0162"
-    "\014.CommandType\022\020\n\010response\030\002 \001(\t\"[\n\010Envel"
+    "\014.CommandType\022\020\n\010response\030\002 \001(\014\"[\n\010Envel"
     "ope\022\"\n\010sendType\030\001 \001(\0162\020.MessageSendType\022"
     "\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030\003"
     " \001(\014*D\n\017ChatMessageType\022\023\n\017MESSAGE_IN_RO"
@@ -2330,7 +2330,7 @@ const ::google::protobuf::internal::ClassData* CommandResponse::GetClassData() c
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 32, 2> CommandResponse::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2> CommandResponse::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -2348,8 +2348,8 @@ const ::_pbi::TcParseTable<1, 2, 0, 32, 2> CommandResponse::_table_ = {
     ::_pbi::TcParser::GetTable<::CommandResponse>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // string response = 2;
-    {::_pbi::TcParser::FastUS1,
+    // bytes response = 2;
+    {::_pbi::TcParser::FastBS1,
      {18, 63, 0, PROTOBUF_FIELD_OFFSET(CommandResponse, _impl_.response_)}},
     // .CommandType type = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CommandResponse, _impl_.type_), 63>(),
@@ -2360,15 +2360,12 @@ const ::_pbi::TcParseTable<1, 2, 0, 32, 2> CommandResponse::_table_ = {
     // .CommandType type = 1;
     {PROTOBUF_FIELD_OFFSET(CommandResponse, _impl_.type_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kOpenEnum)},
-    // string response = 2;
+    // bytes response = 2;
     {PROTOBUF_FIELD_OFFSET(CommandResponse, _impl_.response_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    (0 | ::_fl::kFcSingular | ::_fl::kBytes | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
-    "\17\0\10\0\0\0\0\0"
-    "CommandResponse"
-    "response"
   }},
 };
 
@@ -2406,12 +2403,10 @@ PROTOBUF_NOINLINE void CommandResponse::Clear() {
                 1, this_._internal_type(), target);
           }
 
-          // string response = 2;
+          // bytes response = 2;
           if (!this_._internal_response().empty()) {
             const std::string& _s = this_._internal_response();
-            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "CommandResponse.response");
-            target = stream->WriteStringMaybeAliased(2, _s, target);
+            target = stream->WriteBytesMaybeAliased(2, _s, target);
           }
 
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -2439,9 +2434,9 @@ PROTOBUF_NOINLINE void CommandResponse::Clear() {
 
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
-            // string response = 2;
+            // bytes response = 2;
             if (!this_._internal_response().empty()) {
-              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
                                               this_._internal_response());
             }
             // .CommandType type = 1;

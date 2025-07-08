@@ -2,7 +2,7 @@
 
 void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server)
 {
-    file_logger->info("Join Room Command Process");
+    SPDLOG_LOGGER_INFO(file_logger, "Join Room Command Process");
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     envelope.set_sendtype(MessageSendType::LOCAL);
@@ -12,7 +12,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     if (user->id() == -1)
     {
         CommandResponse cres{};
-        file_logger->warn("Invalid usage");
+        SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
         cres.set_response("You need to /setnick first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -25,7 +25,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     if (user->connectedroomid() != -1)
     {
         CommandResponse cres{};
-        file_logger->warn("Invalid usage");
+        SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
         cres.set_response("You need to leave your current room first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -44,7 +44,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (param1.empty())
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid usage");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Invalid usage of /joinRoom (eg. /joinRoom #Lobby)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -57,7 +57,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (!server->HasRoom(param1))
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid usage");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Room doesn't exist.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -72,7 +72,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (roomContainer->room->haspassword())
         {
             CommandResponse cres{};
-            file_logger->warn("This room requires password.");
+            SPDLOG_LOGGER_WARN(file_logger, "This room requires password.");
             cres.set_response("This room requires password. (eg. /joinRoom #Lobby password123)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -85,7 +85,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (roomContainer->usersInRoom.size() >= roomContainer->room->maxconnections())
         {
             CommandResponse cres{};
-            file_logger->warn("Cannot join, room has reached max capacity.");
+            SPDLOG_LOGGER_WARN(file_logger, "Cannot join, room has reached max capacity.");
             cres.set_response("Cannot join, room has reached max capacity.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -96,7 +96,9 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         }
 
 
+        SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
         user->set_connectedroomid(roomContainer->room->id());
+        roomContainer->AddUser(user);
 
         CommandResponse cres{};
 
@@ -107,17 +109,13 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         cres.set_type(CommandType::JOIN_ROOM);
         envelope.set_payload(cres.SerializeAsString());
 
-        std::string envelopeParsed;
-        envelope.SerializeToString(&envelopeParsed);
-
-
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
-        roomContainer->AddUser(user);
-        file_logger->info("Add user {} to room {}", user->name(), roomContainer->room->name());
 
 
 
+
+        envelope.Clear();
         envelope.set_type(MessageType::USER_JOIN_ROOM);
         envelope.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
         std::string msg = user->name() + " joined channel";
@@ -138,7 +136,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (param1.empty())
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid usage");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Invalid usage of /joinRoom (eg. /joinRoom #Lobby)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -151,7 +149,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (!server->HasRoom(param1))
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid usage");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Room doesn't exist.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -166,7 +164,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (!roomContainer->room->haspassword())
         {
             CommandResponse cres{};
-            file_logger->warn("This room doesn't require password.");
+            SPDLOG_LOGGER_WARN(file_logger, "This room doesn't require password.");
             cres.set_response("This room doesn't require password.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -179,7 +177,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (param2.empty())
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid usage");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Invalid usage of /joinRoom (eg. /joinRoom #Lobby password123)");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -192,7 +190,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (roomContainer->room->password() != param2)
         {
             CommandResponse cres{};
-            file_logger->warn("Invalid password");
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid password");
             cres.set_response("Invalid password");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -205,7 +203,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         if (roomContainer->usersInRoom.size() >= roomContainer->room->maxconnections())
         {
             CommandResponse cres{};
-            file_logger->warn("Cannot join, room has reached max capacity.");
+            SPDLOG_LOGGER_WARN(file_logger, "Cannot join, room has reached max capacity.");
             cres.set_response("Cannot join, room has reached max capacity.");
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
@@ -232,11 +230,11 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         envelope.SerializeToString(&envelopeParsed);
 
 
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
         roomContainer->AddUser(user);
-        file_logger->info("Add user {} to room {}", user->name(), roomContainer->room->name());
-
+        SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
+        envelope.Clear();
 
         envelope.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
         envelope.set_type(MessageType::USER_JOIN_ROOM);

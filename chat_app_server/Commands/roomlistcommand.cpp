@@ -5,7 +5,7 @@ void RoomListCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     envelope.set_sendtype(MessageSendType::LOCAL);
-    file_logger->info("Room List Command Process");
+    SPDLOG_LOGGER_INFO(file_logger, "Room List Command Process");
     CommandResponse cres{};
 
     std::string response;
@@ -26,6 +26,6 @@ void RoomListCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     cres.set_type(CommandType::ROOM_LIST);
     envelope.set_payload(cres.SerializeAsString());
 
-    file_logger->info("Sending to client");
+    SPDLOG_LOGGER_INFO(file_logger, "Sending to client");
     server->Send(envelope, senderSocket);
 }

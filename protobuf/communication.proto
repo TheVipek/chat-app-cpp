@@ -61,7 +61,7 @@ message CommandRequest {
 }
 message CommandResponse {
     CommandType type = 1;
-    string response = 2;
+    bytes response = 2;
 }
 
 enum MessageType {

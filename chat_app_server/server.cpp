@@ -39,7 +39,7 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (serverSocket == INVALID_SOCKET) {
-        file_logger->error("Socket creation failed {}", WSAGetLastError());
+        SPDLOG_LOGGER_ERROR(file_logger, "Socket creation failed {}", WSAGetLastError());
 
         WSACleanup();
         return false;
@@ -55,7 +55,7 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
 
         if (inet_pton(AF_INET, serverConfig->server().address().c_str(), &addr) == -1)
         {
-            file_logger->error("Invalid IPv4 address, setting as local");
+            SPDLOG_LOGGER_ERROR(file_logger, "Invalid IPv4 address, setting as local");
 
             serverAddr.sin_addr.s_addr = INADDR_ANY; // local address ip
         }
@@ -67,16 +67,16 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
     serverAddr.sin_port = htons(serverConfig->server().port());
 
     if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        file_logger->error("Bind failed {}", WSAGetLastError());
+        SPDLOG_LOGGER_ERROR(file_logger, "Bind failed {}", WSAGetLastError());
 
         closesocket(serverSocket);
         return false;
     }
 
-    file_logger->info("Server listening on port {}", serverConfig->server().port());
+    SPDLOG_LOGGER_INFO(file_logger, "Server listening on port {}", serverConfig->server().port());
 
     if (listen(serverSocket, maxConnections) == SOCKET_ERROR) {
-        file_logger->error("Listen failed: {}", WSAGetLastError());
+        SPDLOG_LOGGER_ERROR(file_logger, "Listen failed: {}", WSAGetLastError());
         closesocket(serverSocket);
         return false;
     }
@@ -100,8 +100,7 @@ void Server::PingClients() {
     Envelope ping_envelope{};
     ping_envelope.set_type(MessageType::PING);
     ping_envelope.set_sendtype(MessageSendType::LOCAL);
-    std::string ping_envelope_str;
-    ping_envelope.SerializeToString(&ping_envelope_str);
+    ping_envelope.set_payload("");
 
     auto now = std::chrono::steady_clock::now();
 
@@ -109,25 +108,30 @@ void Server::PingClients() {
 
     for (int i = 0; i < writeSet.fd_count; i++) {
         SOCKET soc = writeSet.fd_array[i];
-        if (now - lastPingTime[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
-            file_logger->info("Ping socket {}", soc);
+        if (now - lastTimeActivity[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
+            auto user = connectedUsers[soc];
+            SPDLOG_LOGGER_INFO(file_logger, "Ping socket {}, user {}#{}, payload {}", soc, user->name(), user->id(), ping_envelope.payload());
             bool failed = Send(ping_envelope, soc).size() > 0;
             if (failed)
             {
-                file_logger->warn("SOCKET {} marked as to be kicked, due to network issues.", soc);
+                SPDLOG_LOGGER_WARN(file_logger, "SOCKET {} marked as to be kicked, due to network issues.", soc);
                 socketsToRemove.push_back(soc);
                 continue;
             }
-            lastPingTime[soc] = now; // Update last PING time
+            UpdateClientActivity(soc);
         }
     }
 
     for (auto soc : socketsToRemove)
     {
         connectedUsers.erase(soc);
-        lastPingTime.erase(soc);
+        lastTimeActivity.erase(soc);
         closesocket(soc);
     }
+}
+void Server::UpdateClientActivity(SOCKET sender) {
+    auto now = std::chrono::steady_clock::now();
+    lastTimeActivity[sender] = now;
 }
 
 void Server::Run() {
@@ -156,7 +160,7 @@ void Server::Run() {
         //i have no plans on testing it on linux
         if (select(0, &readSet, &writeSet, NULL, NULL) == SOCKET_ERROR)
         {
-            file_logger->error("SELECT ERROR {}", WSAGetLastError());
+            SPDLOG_LOGGER_ERROR(file_logger, "SELECT ERROR {}", WSAGetLastError());
             exit(1);
         }
 
@@ -171,7 +175,7 @@ void Server::Run() {
 
                 if ((newfd = accept(serverSocket, (sockaddr*)&clientAddr, &addrlen)) == INVALID_SOCKET)
                 {
-                    file_logger->error("SOCKET ACCEPT ERROR {}", WSAGetLastError());
+                    SPDLOG_LOGGER_ERROR(file_logger, "SOCKET ACCEPT ERROR {}", WSAGetLastError());
                 }
                 else
                 {
@@ -179,11 +183,12 @@ void Server::Run() {
                     newUser->set_id(-1);
                     newUser->set_name("UnknownUser");
                     newUser->set_connectedroomid(-1);
+
                     connectedUsers.insert({ newfd, newUser });
                     fdmax = (newfd > fdmax) ? newfd : fdmax;
 
                     char ip[INET_ADDRSTRLEN];
-                    file_logger->info("New connection from {} on socket {} ", inet_ntop(AF_INET, &clientAddr.sin_addr, ip, sizeof(ip)), newfd);
+                    SPDLOG_LOGGER_INFO(file_logger, "New connection from {} on socket {} ", inet_ntop(AF_INET, &clientAddr.sin_addr, ip, sizeof(ip)), newfd);
                 }
             }
             //handle data from client
@@ -191,17 +196,14 @@ void Server::Run() {
             {
                 if (connectedUsers.contains(senderSocket))
                 {
-                    if ((receivedBytes = recv(senderSocket, messageBuffer, sizeof(messageBuffer), 0)) <= 0)
-                    {
-                        if (receivedBytes == 0)
-                        {
-                            //no connection
-                            file_logger->error("Lost connection to socket? value {}", senderSocket);
-                        }
-                        else {
-                            file_logger->error("Lost connection to socket? error {}", WSAGetLastError());
-                        }
+                    int receivedBytes;
 
+                    char frameSizeBuffer[sizeof(uint32_t)];
+                    receivedBytes = recv(senderSocket, frameSizeBuffer, sizeof(uint32_t), 0);
+
+                    if (receivedBytes <= 0)
+                    {
+                        SPDLOG_LOGGER_ERROR(file_logger, "Lost connection to socket {}? error {} bytes received {}", senderSocket, WSAGetLastError(), receivedBytes);
 
                         auto user = connectedUsers[senderSocket];
                         if (user->connectedroomid() != -1)
@@ -219,17 +221,53 @@ void Server::Run() {
 
                         }
 
-                        
+
 
                         closesocket(senderSocket);
                         connectedUsers.erase(senderSocket);
+                        continue;
                     }
-                    else
+                    uint32_t frameSize = *reinterpret_cast<uint32_t*>(frameSizeBuffer);
+                    frameSize = ntohl(frameSize);
+
+
+                    int allReceivedBytes = 0;
+
+                    std::vector<char> buffer(frameSize);
+                    receivedBytes = recv(senderSocket, buffer.data(), frameSize, 0);
+                    if (receivedBytes <= 0)
                     {
-                        Envelope envelope{};
-                        envelope.ParseFromString(messageBuffer);
-                        serverMessageHandler->HandleMessage(envelope, senderSocket);
+                        SPDLOG_LOGGER_ERROR(file_logger, "Lost connection to socket {}? error {} bytes received {}", senderSocket, WSAGetLastError(), receivedBytes);
+
+                        auto user = connectedUsers[senderSocket];
+                        if (user->connectedroomid() != -1)
+                        {
+                            //i will create more advanced handling for server if needed in future
+                            Envelope envelope2{};
+                            envelope2.set_type(MessageType::USER_LEAVE_ROOM);
+                            envelope2.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
+                            std::string msg = user->name() + "has been kicked from the server due to network error.";
+                            envelope2.set_payload(msg);
+                            Send(envelope2, senderSocket);
+
+                            auto roomContainer = GetRoomContainer(user->connectedroomid());
+                            roomContainer->RemoveUser(user);
+
+                        }
+
+
+
+                        closesocket(senderSocket);
+                        connectedUsers.erase(senderSocket);
+
+                        continue;
                     }
+                   
+
+                    UpdateClientActivity(senderSocket);
+                    Envelope envelope{};
+                    envelope.ParseFromString(buffer.data());
+                    serverMessageHandler->HandleMessage(envelope, senderSocket);
                 }
             }
         }
@@ -242,86 +280,85 @@ void Server::Stop() {
     if (!initialized)
         return;
 }
-std::vector<SOCKET> Server::Send(const Envelope& envelope, SOCKET senderSocket)
+std::vector<SOCKET> Server::Send(Envelope envelope, SOCKET senderSocket)
 {
     std::vector<SOCKET> failedSockets;
 
     std::string envelopeParsed;
     envelope.SerializeToString(&envelopeParsed);
 
+    // Make a copy of the write set to avoid race conditions
+    fd_set currentWriteSet;
+    FD_ZERO(&currentWriteSet);
+    for (int i = 0; i < writeSet.fd_count; i++) {
+        FD_SET(writeSet.fd_array[i], &currentWriteSet);
+    }
+
+    auto sendToSocket = [&](SOCKET dest) {
+        if (!FD_ISSET(dest, &currentWriteSet)) return false;
+
+        std::string envelopeParsed = envelope.SerializeAsString();
+        uint32_t envelopeSize = static_cast<uint32_t>(envelopeParsed.size());
+        uint32_t networkOrderSize = htonl(envelopeSize);
+
+        // Send length
+        const char* frameData = reinterpret_cast<const char*>(&networkOrderSize);
+        int frameTotalSent = 0;
+        while (frameTotalSent < 4) {
+            int n = send(dest, frameData + frameTotalSent, 4 - frameTotalSent, 0);
+            if (n == SOCKET_ERROR) {
+                int err = WSAGetLastError();
+                if (err == WSAEWOULDBLOCK) return false;
+                SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", dest, err);
+                return true;
+            }
+            frameTotalSent += n;
+        }
+
+        // Send payload
+        const char* envelopeBuffer = envelopeParsed.data();
+        int totalSent = 0;
+        while (totalSent < envelopeSize) {
+            int n = send(dest, envelopeBuffer + totalSent, envelopeSize - totalSent, 0);
+            if (n == SOCKET_ERROR) {
+                int err = WSAGetLastError();
+                if (err == WSAEWOULDBLOCK) return false;
+                SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", dest, err);
+                return true;
+            }
+            totalSent += n;
+        }
+        return false;
+        };
+
+
     auto msgSendType = envelope.sendtype();
+    auto* userSender = GetUser(senderSocket);
 
-    if (msgSendType == MessageSendType::LOCAL)
-    {
-        if (send(senderSocket, envelopeParsed.data(), envelopeParsed.size(), 0) == SOCKET_ERROR)
-        {
-            file_logger->error("Problem with sending data to socket {} error {} ", senderSocket , WSAGetLastError());
-            failedSockets.push_back(senderSocket);
+    for (int j = 0; j < currentWriteSet.fd_count; j++) {
+        SOCKET dest = currentWriteSet.fd_array[j];
+        if (dest == serverSocket) continue;
+
+        bool shouldSend = false;
+
+        switch (msgSendType) {
+        case MessageSendType::LOCAL:
+            shouldSend = (dest == senderSocket);
+            break;
+        case MessageSendType::WITHIN_ROOM:
+            shouldSend = (userSender->connectedroomid() == GetUser(dest)->connectedroomid());
+            break;
+        case MessageSendType::WITHIN_ROOM_EXCEPT_THIS:
+            shouldSend = (dest != senderSocket) &&
+                (userSender->connectedroomid() == GetUser(dest)->connectedroomid());
+            break;
+        case MessageSendType::GLOBAL:
+            shouldSend = true;
+            break;
         }
-    }
-    else if (msgSendType == MessageSendType::WITHIN_ROOM)
-    {
-        auto userSender = GetUser(senderSocket);
-        for (int j = 0; j < writeSet.fd_count; j++)
-        {
-            SOCKET dest = writeSet.fd_array[j];
 
-            //send to all except server and sender
-            if (dest != serverSocket)
-            {
-                
-                auto userSendTo = GetUser(dest);
-                if (userSender->connectedroomid() == userSendTo->connectedroomid())
-                {
-                    if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
-                    {
-                        file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
-                        failedSockets.push_back(dest);
-
-                    }
-                }
-            }
-        }
-    }
-    else if (msgSendType == MessageSendType::WITHIN_ROOM_EXCEPT_THIS)
-    {
-        auto userSender = GetUser(senderSocket);
-        for (int j = 0; j < writeSet.fd_count; j++)
-        {
-            SOCKET dest = writeSet.fd_array[j];
-
-            //send to all except server and sender
-            if (dest != serverSocket && dest != senderSocket)
-            {
-                auto userSendTo = GetUser(dest);
-                if (userSender->connectedroomid() == userSendTo->connectedroomid())
-                {
-                    if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
-                    {
-                        file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
-                        failedSockets.push_back(dest);
-
-                    }
-                }
-            }
-        }
-    }
-    else if (msgSendType == MessageSendType::GLOBAL)
-    {
-        for (int j = 0; j < writeSet.fd_count; j++)
-        {
-            SOCKET dest = writeSet.fd_array[j];
-
-            //send to all except server and sender
-            if (dest != serverSocket)
-            {
-                if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
-                {
-                    file_logger->error("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
-                    failedSockets.push_back(dest);
-
-                }
-            }
+        if (shouldSend && sendToSocket(dest)) {
+            failedSockets.push_back(dest);
         }
     }
 

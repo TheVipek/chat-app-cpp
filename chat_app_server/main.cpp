@@ -16,24 +16,31 @@ Server* server;
 
 int main()
 {
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y_%m_%d_%H_%M_%S");
+
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-    sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/logs.log", 1024 * 1024, 3));
+    sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/logs_" + ss.str() + "_" + std::to_string(getpid()) + +".log", 1024 * 1024, 3));
     file_logger = std::make_shared<spdlog::logger>("combined_logger", begin(sinks), end(sinks));
+    file_logger->flush_on(spdlog::level::level_enum::info);
 
     spdlog::set_default_logger(file_logger);
 
-    file_logger->info("-----------------------------------PROCESS START-----------------------------------");
+    SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS START-----------------------------------");
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        file_logger->error("WSAStartup failed.\n");
+        SPDLOG_LOGGER_ERROR(file_logger, "WSAStartup failed.\n");
         return 1;
     }
 
     std::string json_config_file_path = "config.json";
     std::ifstream config_file(json_config_file_path);
     if (!config_file.is_open()) {
-        file_logger->error("Error: Could not open config file: " + json_config_file_path);
+        SPDLOG_LOGGER_ERROR(file_logger, "Error: Could not open config file: " + json_config_file_path);
         return 1;
     }
 
@@ -54,7 +61,7 @@ int main()
         roomsInfo += std::format("  ID: {}, Name: {}, Has Password: {}, Password: {}, MaxConnections: {} IsPublic:{}\n", room.id(), room.name(), (room.haspassword() ? "true" : "false"), room.password(), room.maxconnections(), (room.ispublic() ? "true" : "false"));
 
     }
-    file_logger->info(roomsInfo);
+    SPDLOG_LOGGER_INFO(file_logger, roomsInfo);
 
     server = new Server(file_logger);
     
@@ -64,5 +71,5 @@ int main()
     server->Run();
 
 
-    file_logger->info("-----------------------------------PROCESS END-----------------------------------");
+    SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
 }

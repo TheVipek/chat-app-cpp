@@ -20,7 +20,7 @@ public:
 	bool IsInitialized();
 	void Run();
 	void Stop();
-	std::vector<SOCKET> Send(const Envelope& envelope, SOCKET senderSocket);
+	std::vector<SOCKET> Send(Envelope envelope, SOCKET senderSocket);
 	int GetNewUserIdentifier();
 	bool HasRoom(std::string roomName);
 	int MaxRoomID();
@@ -46,11 +46,12 @@ protected:
 	sockaddr_in clientAddr;
 	SOCKET fdmax;
 	SOCKET newfd;
-	char messageBuffer[1024];
+	
 	int receivedBytes;
 	int addrlen;
 
-	std::unordered_map<SOCKET, std::chrono::steady_clock::time_point> lastPingTime;
+	std::unordered_map<SOCKET, std::chrono::steady_clock::time_point> lastTimeActivity;
 	int pingTimeoutSeconds = 5;
 	void PingClients();
+	void UpdateClientActivity(SOCKET sender);
 };

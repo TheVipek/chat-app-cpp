@@ -2,7 +2,7 @@
 #include "../Helpers.h"
 void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server)
 {
-    file_logger->info("Create Room Command Process");
+    SPDLOG_LOGGER_INFO(file_logger, "Create Room Command Process");
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     envelope.set_sendtype(MessageSendType::LOCAL);
@@ -13,7 +13,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
     if (user->id() == -1)
     {
         CommandResponse cres{};
-        file_logger->warn("Invalid usage");
+        SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
         cres.set_response("You need to /setnick first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -27,7 +27,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
     {
         sendType = MessageSendType::LOCAL;
         CommandResponse cres{};
-        file_logger->warn("Invalid usage");
+        SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
         cres.set_response("You need to leave your current room first.");
         cres.set_type(CommandType::INVALID);
         envelope.set_payload(cres.SerializeAsString());
@@ -43,7 +43,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         std::string param1 = creq.requestparameters()[0];
         if (server->HasRoom(param1))
         {
-            file_logger->warn("Room already exists, please use different name.");
+            SPDLOG_LOGGER_WARN(file_logger, "Room already exists, please use different name.");
             CommandResponse cres{};
             cres.set_response("Room already exists, please use different name.");
             cres.set_type(CommandType::INVALID);
@@ -58,7 +58,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (!Helpers::isInteger(param2))
         {
-            file_logger->warn("Second parameter should be number.");
+            SPDLOG_LOGGER_WARN(file_logger, "Second parameter should be number.");
             CommandResponse cres{};
             cres.set_response("Second parameter should be number.");
             cres.set_type(CommandType::INVALID);
@@ -72,7 +72,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         int param2_int = std::stoi(param2);
         if (param2_int < 1)
         {
-            file_logger->warn("Second parameter value should be higher than 1.");
+            SPDLOG_LOGGER_WARN(file_logger, "Second parameter value should be higher than 1.");
             CommandResponse cres{};
             cres.set_response("Second parameter value should be higher than 1.");
             cres.set_type(CommandType::INVALID);
@@ -87,7 +87,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (!Helpers::isInteger(param3))
         {
-            file_logger->warn("Third parameter should be number. (0 = not public, 1 = public)");
+            SPDLOG_LOGGER_WARN(file_logger, "Third parameter should be number. (0 = not public, 1 = public)");
             CommandResponse cres{};
             cres.set_response("Third parameter should be number. (0 = not public, 1 = public)");
             cres.set_type(CommandType::INVALID);
@@ -102,7 +102,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (param3_int != 0 && param3_int != 1)
         {
-            file_logger->warn("Third parameter should be number. (0 = not public, 1 = public)");
+            SPDLOG_LOGGER_WARN(file_logger, "Third parameter should be number. (0 = not public, 1 = public)");
             CommandResponse cres{};
             cres.set_response("Third parameter should be number. (0 = not public, 1 = public)");
             cres.set_type(CommandType::INVALID);
@@ -117,11 +117,11 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         //notification succes created
         CommandResponse cres{};
-        file_logger->info("You succesfully created room.");
+        SPDLOG_LOGGER_INFO(file_logger, "You succesfully created room.");
         cres.set_response("You succesfully created room.");
         cres.set_type(CommandType::CREATE_ROOM);
         envelope.set_payload(cres.SerializeAsString());
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
 
 
@@ -138,10 +138,10 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         envelope.SerializeToString(&envelopeParsed);
 
 
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
         roomContainer->AddUser(user);
-        file_logger->info("Created and connected user {} to room {}", user->name(), roomContainer->room->name());
+        SPDLOG_LOGGER_INFO(file_logger, "Created and connected user {} to room {}", user->name(), roomContainer->room->name());
         return;
     }
     //CREATION WITH PASSWORD
@@ -150,7 +150,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         std::string param1 = creq.requestparameters()[0];
         if (server->HasRoom(param1))
         {
-            file_logger->warn("Room already exists, please use different name.");
+            SPDLOG_LOGGER_WARN(file_logger, "Room already exists, please use different name.");
             CommandResponse cres{};
             cres.set_response("Room already exists, please use different name.");
             cres.set_type(CommandType::INVALID);
@@ -165,7 +165,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (!Helpers::isInteger(param2))
         {
-            file_logger->warn("Second parameter should be number.");
+            SPDLOG_LOGGER_WARN(file_logger, "Second parameter should be number.");
             CommandResponse cres{};
             cres.set_response("Second parameter should be number.");
             cres.set_type(CommandType::INVALID);
@@ -178,7 +178,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         int param2_int = std::stoi(param2);
         if (param2_int < 1)
         {
-            file_logger->warn("Second parameter value should be higher than 1.");
+            SPDLOG_LOGGER_WARN(file_logger, "Second parameter value should be higher than 1.");
             CommandResponse cres{};
             cres.set_response("Second parameter value should be higher than 1.");
             cres.set_type(CommandType::INVALID);
@@ -193,7 +193,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (!Helpers::isInteger(param3))
         {
-            file_logger->warn("Third parameter should be number. (0 = not public, 1 = public)");
+            SPDLOG_LOGGER_WARN(file_logger, "Third parameter should be number. (0 = not public, 1 = public)");
             CommandResponse cres{};
             cres.set_response("Third parameter should be number. (0 = not public, 1 = public)");
             cres.set_type(CommandType::INVALID);
@@ -207,7 +207,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         if (param3_int != 0 && param3_int != 1)
         {
-            file_logger->warn("Third parameter should be number. (0 = not public, 1 = public)");
+            SPDLOG_LOGGER_WARN(file_logger, "Third parameter should be number. (0 = not public, 1 = public)");
             CommandResponse cres{};
             cres.set_response("Third parameter should be number. (0 = not public, 1 = public)");
             cres.set_type(CommandType::INVALID);
@@ -224,11 +224,11 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         //notification succes created
         CommandResponse cres{};
-        file_logger->info("You succesfully created room.");
+        SPDLOG_LOGGER_INFO(file_logger, "You succesfully created room.");
         cres.set_response("You succesfully created room.");
         cres.set_type(CommandType::CREATE_ROOM);
         envelope.set_payload(cres.SerializeAsString());
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
 
 
@@ -245,10 +245,10 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
         envelope.SerializeToString(&envelopeParsed);
 
 
-        file_logger->info("Send to client");
+        SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
         roomContainer->AddUser(user);
-        file_logger->info("Created and connected user {} to room {}", user->name(), roomContainer->room->name());
+        SPDLOG_LOGGER_INFO(file_logger, "Created and connected user {} to room {}", user->name(), roomContainer->room->name());
         return;
 
     }
@@ -256,7 +256,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
     //INVALID
     CommandResponse cres{};
-    file_logger->warn("Invalid usage");
+    SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
     cres.set_response("You need to pass 3 arguments for room creation without password (NAME MAX_CONNECTIONS IS_PUBLIC) or with password (NAME MAX_CONNECTIONS IS_PUBLIC PASSWORD)");
     cres.set_type(CommandType::INVALID);
     envelope.set_payload(cres.SerializeAsString());

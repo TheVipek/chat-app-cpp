@@ -26,8 +26,6 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-
-#define LOGGING true
 using namespace ftxui;
 class ClientChatMessage
 {
@@ -40,26 +38,61 @@ SOCKET clientSocket;
 std::string currentInput;
 ClientUser clientUser;
 std::vector<ClientChatMessage> chatHistory;
-int pingTimeoutSeconds = 5;
 int timeoutTries = 3;
-std::chrono::steady_clock::time_point lastPingTime;
 std::mutex chatMutex;
 std::thread uiThread;
 std::thread pingThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
+uint32_t frameSize = 0;
 float scroll_y = 1.f;
-std::map<MessageSendType, std::string> sendTypeMappings;
-std::map<ChatMessageType, ftxui::Color> colorDependingOnChatMessage;
-std::string GetSendTypeString(MessageSendType messageSendType)
+std::map<MessageSendType, std::string> sendTypeMappings = {
+		{ MessageSendType::LOCAL, "[LOCAL]"},
+		{ MessageSendType::GLOBAL, "[GLOBAL]"},
+		{ MessageSendType::WITHIN_ROOM, "[ROOM]"},
+		{ MessageSendType::WITHIN_ROOM_EXCEPT_THIS, "[ROOM]"}
+};
+std::string messageSendTypeDefault = "Unknown MessageSendType";
+
+std::map<MessageType, std::string> messageTypeMappings = {
+	{ MessageType::CHAT_MESSAGE, "CHAT_MESSAGE"},
+	{ MessageType::COMMAND, "COMMAND"},
+	{ MessageType::PING, "PING"},
+	{ MessageType::USER_JOIN_ROOM, "USER_JOIN_ROOM"},
+	{ MessageType::USER_LEAVE_ROOM, "USER_LEAVE_ROOM" }
+};
+std::string messageTypeDefault = "Unknown MessageType";
+
+std::map<CommandType, std::string> commandTypeMappings = {
+	{ CommandType::CREATE_ROOM, "CREATE_ROOM"},
+	{ CommandType::HELP, "HELP"},
+	{ CommandType::INVALID, "INVALID"},
+	{ CommandType::JOIN_ROOM, "JOIN_ROOM"},
+	{ CommandType::LEAVE_ROOM, "LEAVE_ROOM"},
+	{ CommandType::NICKNAME, "NICKNAME"},
+	{ CommandType::ROOM_LIST, "ROOM_LIST"}
+};	
+std::string commandTypeDefault = "Unknown CommandType";
+
+
+std::map<ChatMessageType, ftxui::Color> colorDependingOnChatMessage{
+		{ ChatMessageType::MESSAGE_IN_ROOM, ftxui::Color::Yellow},
+		{ ChatMessageType::INFORMATION, ftxui::Color::RedLight},
+		{ ChatMessageType::WHISPER, ftxui::Color::Magenta}
+};
+ftxui::Color colorChatMessageDefault = ftxui::Color::IndianRedBis;
+ftxui::Color timeChatMessageColor = ftxui::Color::DeepSkyBlue1;
+template<typename T, typename U>
+U GetEnumValue(T enumValue, std::map<T, U>& map, U& defaultValue)
 {
-	if (sendTypeMappings.contains(messageSendType))
+	if (map.contains(enumValue))
 	{
-		return sendTypeMappings[messageSendType];
+		return map[enumValue];
 	}
 
-	return "Unknown Send Type";
+	return defaultValue;
 }
+
 ftxui::Color GetColorDependingOnMessageType(ChatMessageType type)
 {
 	if (colorDependingOnChatMessage.contains(type))
@@ -74,7 +107,8 @@ void EndProcess()
 {
 	closesocket(clientSocket);
 	WSACleanup();
-	file_logger->info("-----------------------------------PROCESS END-----------------------------------");
+	SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
+	exit(1);
 }
 
 ChatMessage GetChatMessage( std::string msg,  std::string sender, ChatMessageType type)
@@ -99,21 +133,42 @@ void AddChatMessage(ChatMessage message)
 	chatMutex.unlock();
 }
 
-bool SendToServer(Envelope envelope) {
-	file_logger->info("Send To Server");
+bool SendToServer(Envelope envelope, SOCKET socket) {
+	SPDLOG_LOGGER_INFO(file_logger, "Send To Server");
 	std::string serializedEnvelope = envelope.SerializeAsString();
-	int sendResult = send(clientSocket, serializedEnvelope.data(), serializedEnvelope.size(), 0);
 
-	if (sendResult == SOCKET_ERROR) {
-		if (LOGGING)
-		{
-			file_logger->error("Send to Server Failed error {}", WSAGetLastError());
+	uint32_t envelopeSize = static_cast<uint32_t>(serializedEnvelope.size());
+	uint32_t networkOrderSize = htonl(envelopeSize);
+
+	// Send length
+	const char* frameData = reinterpret_cast<const char*>(&networkOrderSize);
+	int frameTotalSent = 0;
+	while (frameTotalSent < 4) {
+		int n = send(socket, frameData + frameTotalSent, 4 - frameTotalSent, 0);
+		if (n == SOCKET_ERROR) {
+			int err = WSAGetLastError();
+			if (err == WSAEWOULDBLOCK) return false;
+			SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", socket, err);
+			return true;
 		}
-		EndProcess();
-		return false;
+		frameTotalSent += n;
 	}
 
-	file_logger->info("Send Finish");
+	// Send payload
+	const char* envelopeBuffer = serializedEnvelope.data();
+	int totalSent = 0;
+	while (totalSent < envelopeSize) {
+		int n = send(socket, envelopeBuffer + totalSent, envelopeSize - totalSent, 0);
+		if (n == SOCKET_ERROR) {
+			int err = WSAGetLastError();
+			if (err == WSAEWOULDBLOCK) return false;
+			SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", socket, err);
+			return true;
+		}
+		totalSent += n;
+	}
+
+	SPDLOG_LOGGER_INFO(file_logger, "Send Finish");
 	return true;
 }
 
@@ -123,8 +178,9 @@ void HandleInput() {
 
 	if (currentInput[0] == '/') // command
 	{
-		file_logger->info("Sending command");
-		auto msg = GetChatMessage(currentInput, GetSendTypeString(MessageSendType::LOCAL), ChatMessageType::INFORMATION);
+
+		SPDLOG_LOGGER_INFO(file_logger, "Sending command: {}", currentInput);
+		auto msg = GetChatMessage(currentInput, GetEnumValue(MessageSendType::LOCAL, sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
 		AddChatMessage(msg);
 		
 		std::istringstream iss(currentInput);
@@ -146,27 +202,30 @@ void HandleInput() {
 		}
 
 		envelope.set_payload(cr.SerializeAsString());
-		SendToServer(envelope);
+		SendToServer(envelope, clientSocket);
 	}
 	else if(clientUser.id() != -1 && clientUser.connectedroomid() != -1)
 	{
-		file_logger->info("Send Chat Message");
+
+		SPDLOG_LOGGER_INFO(file_logger, "Send chat message: {}", currentInput);
 		std::string name = std::format("{}#{}", clientUser.name(), clientUser.id());
 		auto msg = GetChatMessage(currentInput, name, ChatMessageType::MESSAGE_IN_ROOM);
 
 		Envelope envelope{};
 		envelope.set_type(MessageType::CHAT_MESSAGE);
+		envelope.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
 		envelope.set_payload(msg.SerializeAsString());
 
-		if (SendToServer(envelope))
+		if (SendToServer(envelope, clientSocket))
 		{
 			AddChatMessage(msg);
 		}
 	}
 	else 
 	{
-		file_logger->warn("Cannot send chat message");
-		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", GetSendTypeString(MessageSendType::LOCAL), ChatMessageType::INFORMATION);
+
+		SPDLOG_LOGGER_WARN(file_logger, "Cannot send chat message: {}", currentInput);
+		auto msg = GetChatMessage("You need to set nickname and join any room to send messages.", GetEnumValue(MessageSendType::LOCAL, sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
 		AddChatMessage(msg);
 	}
 
@@ -188,9 +247,9 @@ void UpdateChat() {
 			std::strftime(std::data(timeString), std::size(timeString),
 				"%T", std::gmtime(&msg.receiveTime));
 			std::string time_str = "[" + std::string(timeString) + "]";
-			auto styled_time = ftxui::text(time_str) | ftxui::color(ftxui::Color::DeepSkyBlue1);
+			auto styled_time = ftxui::text(time_str) | ftxui::color(timeChatMessageColor);
 			std::string sender = msg.chatMessage.sender();
-			auto styled_sender = ftxui::text(sender) | ftxui::color(GetColorDependingOnMessageType(msg.chatMessage.messagetype()));
+			auto styled_sender = ftxui::text(sender) | ftxui::color(GetEnumValue(msg.chatMessage.messagetype(), colorDependingOnChatMessage, colorChatMessageDefault));
 			std::string message = msg.chatMessage.message();
 			auto styled_message = ftxui::paragraph(message);
 
@@ -259,171 +318,161 @@ void UpdateChat() {
 void ListenForMessages(SOCKET clientSocket)
 {
 
+	int leftTries = timeoutTries;
 	while (true) {
 
-		int leftTries = timeoutTries;
-		fd_set readSet;
-		FD_ZERO(&readSet);
-		FD_SET(clientSocket, &readSet);
-		timeval timeout{ .tv_sec = pingTimeoutSeconds, .tv_usec = 0 };
-		int ready = select(clientSocket + 1, &readSet, nullptr, nullptr, &timeout);
-		char buffer[1024];
-		if (ready > 0 && FD_ISSET(clientSocket, &readSet))
+		
+		int receivedBytes;
+		char frameSizeBuffer[sizeof(uint32_t)];
+		receivedBytes = recv(clientSocket, frameSizeBuffer, sizeof(uint32_t), 0);
+		if (receivedBytes <= 0)
 		{
-			int receivedBytes = recv(clientSocket, buffer, sizeof(buffer), 0);
-			if (receivedBytes <= 0) {
-				file_logger->warn("recv bytes: {}", receivedBytes);
-				if (LOGGING)
-				{
-					file_logger->error("Server disconnected");
-				}
+			if (receivedBytes == SOCKET_ERROR) {
+				SPDLOG_LOGGER_ERROR(file_logger, "Server disconnected, recv bytes {}", receivedBytes);
 				EndProcess();
 				break;
 			}
 
-			file_logger->info("Message from server received");
+			SPDLOG_LOGGER_ERROR(file_logger, "Unexpected error {}", receivedBytes);
+			continue;
+		}
+		frameSize = *reinterpret_cast<uint32_t*>(frameSizeBuffer);
+		frameSize = ntohl(frameSize);
 
-			Envelope envelope;
-			envelope.ParseFromString(buffer);
 
-			switch (envelope.type())
+		int allReceivedBytes = 0;
+
+		std::vector<char> buffer(frameSize);
+		receivedBytes = recv(clientSocket, buffer.data(), frameSize, 0);
+		if (receivedBytes <= 0)
+		{
+			if (receivedBytes == SOCKET_ERROR) {
+				SPDLOG_LOGGER_ERROR(file_logger, "Server disconnected, recv bytes {}", receivedBytes);
+				EndProcess();
+				break;
+			}
+
+			SPDLOG_LOGGER_ERROR(file_logger, "Unexpected error {}", receivedBytes);
+			continue;
+		}
+
+
+		
+		leftTries = timeoutTries;
+		SPDLOG_LOGGER_INFO(file_logger, "Message from server received");
+
+		Envelope envelope{};
+		envelope.ParseFromString(buffer.data());
+
+		SPDLOG_LOGGER_INFO(file_logger, "Received {}", GetEnumValue(envelope.type(), messageTypeMappings, messageTypeDefault));
+
+
+		switch (envelope.type())
+		{
+		case MessageType::CHAT_MESSAGE:
+		{
+			ChatMessage chatMessage;
+			chatMessage.ParseFromString(envelope.payload());
+			AddChatMessage(chatMessage);
+			break;
+		}
+		case MessageType::USER_JOIN_ROOM:
+		{
+			ChatMessage chatMessage = GetChatMessage(envelope.payload(), GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+			AddChatMessage(chatMessage);
+			break;
+		}
+		case MessageType::USER_LEAVE_ROOM:
+		{
+			ChatMessage chatMessage = GetChatMessage(envelope.payload(), GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+			AddChatMessage(chatMessage);
+			break;
+		}
+		case MessageType::PING:
+		{
+			SPDLOG_LOGGER_INFO(file_logger, "Send PING response to the server");
+			envelope.Clear();
+			envelope.set_type(MessageType::PING);
+			envelope.set_sendtype(MessageSendType::LOCAL);
+			envelope.set_payload("");
+			SendToServer(envelope, clientSocket);
+			break;
+		}
+		case MessageType::COMMAND:
+		{
+			CommandResponse cres;
+			cres.ParseFromString(envelope.payload());
+
+			SPDLOG_LOGGER_INFO(file_logger, "Received {}", GetEnumValue(cres.type(), commandTypeMappings, commandTypeDefault));
+
+			switch (cres.type())
 			{
-			case MessageType::CHAT_MESSAGE:
+			case CommandType::HELP:
+			case CommandType::ROOM_LIST:
+			case CommandType::INVALID:
+			case CommandType::CREATE_ROOM:
 			{
-				file_logger->info("Received {}", std::to_string(MessageType::CHAT_MESSAGE));
-				ChatMessage chatMessage;
-				chatMessage.ParseFromString(envelope.payload());
+				ChatMessage chatMessage = GetChatMessage(cres.response(), GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
 				AddChatMessage(chatMessage);
+
 				break;
 			}
-			case MessageType::USER_JOIN_ROOM:
-			case MessageType::USER_LEAVE_ROOM:
+			case CommandType::NICKNAME:
 			{
-				file_logger->info("Received {} or {}", std::to_string(MessageType::USER_JOIN_ROOM), std::to_string(MessageType::USER_LEAVE_ROOM));
+				clientUser.ParseFromString(cres.response());
 
-				ChatMessage chatMessage = GetChatMessage(envelope.payload(), GetSendTypeString(envelope.sendtype()), ChatMessageType::INFORMATION);
+				ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
 				AddChatMessage(chatMessage);
+
 				break;
 			}
-			case MessageType::PING:
+			case CommandType::JOIN_ROOM:
 			{
-				SendToServer(envelope);
-				lastPingTime = std::chrono::steady_clock::now();
+				clientUser.ParseFromString(cres.response());
+				ChatMessage chatMessage = GetChatMessage("Connected to the channel.", GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+				AddChatMessage(chatMessage);
+
 				break;
 			}
-			case MessageType::COMMAND:
+			case CommandType::LEAVE_ROOM:
 			{
-				file_logger->info("Received command response");
+				clientUser.ParseFromString(cres.response());
+				ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+				AddChatMessage(chatMessage);
 
-				CommandResponse cres;
-				cres.ParseFromString(envelope.payload());
-				switch (cres.type())
-				{
-				case CommandType::HELP:
-				case CommandType::ROOM_LIST:
-				case CommandType::INVALID:
-				case CommandType::CREATE_ROOM:
-				{
-					file_logger->info("Received {} or {} or {}", std::to_string(CommandType::HELP), std::to_string(CommandType::ROOM_LIST), std::to_string(CommandType::INVALID));
-
-					ChatMessage chatMessage = GetChatMessage(cres.response(), GetSendTypeString(envelope.sendtype()), ChatMessageType::INFORMATION);
-					AddChatMessage(chatMessage);
-
-					break;
-				}
-				case CommandType::NICKNAME:
-				{
-					file_logger->info("Received {}", std::to_string(CommandType::NICKNAME));
-
-					clientUser.ParseFromString(cres.response());
-
-					ChatMessage chatMessage = GetChatMessage("New nickname " + clientUser.name(), GetSendTypeString(envelope.sendtype()), ChatMessageType::INFORMATION);
-					AddChatMessage(chatMessage);
-
-					break;
-				}
-				case CommandType::JOIN_ROOM:
-				{
-					file_logger->info("Received {}", std::to_string(CommandType::JOIN_ROOM));
-
-					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Connected to the channel.", GetSendTypeString(envelope.sendtype()), ChatMessageType::INFORMATION);
-					AddChatMessage(chatMessage);
-
-					break;
-				}
-				case CommandType::LEAVE_ROOM:
-				{
-					file_logger->info("Received {}", std::to_string(CommandType::LEAVE_ROOM));
-
-					clientUser.ParseFromString(cres.response());
-					ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", GetSendTypeString(envelope.sendtype()), ChatMessageType::INFORMATION);
-					AddChatMessage(chatMessage);
-
-					break;
-				}
-				default:
-					break;
-				}
+				break;
 			}
 			default:
 				break;
 			}
-
-			auto now = std::chrono::steady_clock::now();
-			if (now - lastPingTime > std::chrono::seconds(pingTimeoutSeconds))
-			{
-				if (LOGGING)
-				{
-					file_logger->error("Server disconnected");
-				}
-				//didn't received PING for timeout time.
-				EndProcess();
-				break;
-			}
 		}
-		else if (ready == 0) // no data, timeout occured
-		{
-			if (leftTries == 0)
-			{
-				if (LOGGING)
-				{
-					file_logger->error("Server disconnected");
-				}
-				EndProcess();
-				break;
-			}
-			file_logger->error("Select timeout has occured, retrying...");
-			AddChatMessage(GetChatMessage("Server timeout, retrying...", GetSendTypeString(MessageSendType::LOCAL), ChatMessageType::INFORMATION));
-			leftTries--;
-			continue;
+		default:
+			break;
 		}
+	
 	}
 }
 
 int main()
 {
-	sendTypeMappings = {
-		{ MessageSendType::LOCAL, "[LOCAL]"},
-		{ MessageSendType::GLOBAL, "[GLOBAL]"},
-		{ MessageSendType::WITHIN_ROOM, "[ROOM]"},
-		{ MessageSendType::WITHIN_ROOM_EXCEPT_THIS, "[ROOM]"}
-	};
-	colorDependingOnChatMessage = {
-		{ ChatMessageType::MESSAGE_IN_ROOM, ftxui::Color::Yellow},
-		{ ChatMessageType::INFORMATION, ftxui::Color::RedLight},
-		{ ChatMessageType::WHISPER, ftxui::Color::Magenta}
-	};
-	file_logger = spdlog::rotating_logger_mt("file_logger", "logs/logs.log", 1024 * 1024, 3);
+
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+	std::stringstream ss;    
+	ss << std::put_time(std::localtime(&in_time_t), "%Y_%m_%d_%H_%M_%S");
+
+	file_logger = spdlog::rotating_logger_mt("file_logger", "logs/logs_" + ss.str() + "_" + std::to_string(getpid()) + +".log", 1024 * 1024, 3);
 	file_logger->flush_on(spdlog::level::level_enum::info);
 	spdlog::set_default_logger(file_logger);
-
-	file_logger->info("-----------------------------------PROCESS START-----------------------------------");
+	//file_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
+	SPDLOG_LOGGER_INFO(file_logger,"-----------------------------------PROCESS START-----------------------------------");
 
 	std::string json_config_file_path = "config.json";
 	std::ifstream config_file(json_config_file_path);
 	if (!config_file.is_open()) {
-		file_logger->error("Error: Could not open config file: " + json_config_file_path);
+		
+		SPDLOG_LOGGER_ERROR(file_logger ,"Error: Could not open config file: " + json_config_file_path);
 		return 1;
 	}
 
@@ -436,10 +485,7 @@ int main()
 
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		if (LOGGING)
-		{
-			file_logger->error("WSAStartup failed");
-		}
+		SPDLOG_LOGGER_ERROR(file_logger, "WSAStartup failed");
 		return 0;
 	}
 
@@ -458,10 +504,8 @@ int main()
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (clientSocket == INVALID_SOCKET)
 	{
-		if (LOGGING)
-		{
-			file_logger->error("Socket creation failed: {}", WSAGetLastError());
-		}
+		SPDLOG_LOGGER_ERROR(file_logger, "Socket creation failed: {}", WSAGetLastError());
+		
 		WSACleanup();
 		return 0;
 	}
@@ -472,37 +516,28 @@ int main()
 	inet_pton(AF_INET, serverConfig->address().c_str(), &serverAddr.sin_addr);
 	serverAddr.sin_port = htons(serverConfig->port());
 
-	if (LOGGING)
-	{
-		file_logger->info("Trying to connect to server. address:{} port:{}", serverConfig->address(), serverConfig->port());
-	}
+	SPDLOG_LOGGER_INFO(file_logger, "Trying to connect to server. address:{} port:{}", serverConfig->address(), serverConfig->port());
+	
 
 	int returnCall = connect(clientSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
 
 	if (returnCall == SOCKET_ERROR)
 	{
-		if (LOGGING)
-		{
-			file_logger->error("Connection error return call: {} socketVal: {}", returnCall, clientSocket);
-		}
+		SPDLOG_LOGGER_ERROR(file_logger, "Connection error return call: {} socketVal: {}", returnCall, clientSocket);
 		EndProcess();
 		return 0;
 	}
 
-	if (LOGGING) 
-	{
-		file_logger->info("Connection established! address:{} port: {}", serverConfig->address(), serverConfig->port());
-	}
-	chatMessage = GetChatMessage("/help to see commands", GetSendTypeString(MessageSendType::LOCAL), ChatMessageType::INFORMATION);
-	AddChatMessage(chatMessage);
+	SPDLOG_LOGGER_INFO(file_logger, "Connection established! address:{} port: {}", serverConfig->address(), serverConfig->port());
 
-	lastPingTime = std::chrono::steady_clock::now();
+	chatMessage = GetChatMessage("/help to see commands", GetEnumValue(MessageSendType::LOCAL, sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+	AddChatMessage(chatMessage);
 
 
 	syncChatThread = std::thread(ListenForMessages, clientSocket);
 	syncChatThread.join();
 
-	return 0;
+	EndProcess();
 }
 
 

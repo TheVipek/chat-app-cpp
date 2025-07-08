@@ -20,46 +20,16 @@ ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdl
 
 void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET senderSocket)
 {
-    file_logger->info("Handle Message for socket: {}", senderSocket);
+    SPDLOG_LOGGER_INFO(file_logger, "Handle Message for socket: {}", senderSocket);
     switch (envelope.type())
     {
         case MessageType::CHAT_MESSAGE:
         {
-
-            std::string envelopeParsed;
-            envelope.SerializeToString(&envelopeParsed);
-
-
             auto user = server->GetUser(senderSocket);
             if (user->id() != -1 && user->connectedroomid() != -1)
             {
-                file_logger->info("Sending Chat Message from {} user", user->name());
-
-                int totallySendTo = 0;
-                
-                for (int j = 0; j < server->writeSet.fd_count; j++)
-                {
-                    SOCKET dest = server->writeSet.fd_array[j];
-
-                    //send to all except server and sender
-                    if (dest != server->serverSocket && dest != senderSocket)
-                    {
-                        auto userSendTo = server->GetUser(dest);
-                        if (user->connectedroomid() == userSendTo->connectedroomid())
-                        {
-                            if (send(dest, envelopeParsed.data(), envelopeParsed.size(), 0) == -1)
-                            {
-                                file_logger->warn("Problem with sending data to socket {} error {}", dest, WSAGetLastError());
-                            }
-                            else 
-                            {
-                                totallySendTo++;
-                            }
-                        }
-                    }
-                }
-
-                file_logger->info("Sent to {} users", totallySendTo);
+                SPDLOG_LOGGER_INFO(file_logger, "Sending Chat Message from {} user", user->name());
+                server->Send(envelope, senderSocket);
             }
             break;
         }
@@ -69,18 +39,17 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
             {
                 closesocket(senderSocket);
                 server->connectedUsers.erase(senderSocket);
-                server->lastPingTime.erase(senderSocket);
+                server->lastTimeActivity.erase(senderSocket);
             }
             else
             {
-                file_logger->info("Pong socket {}", senderSocket);
+                SPDLOG_LOGGER_INFO(file_logger, "Pong socket {}", senderSocket);
             }
-
             break;
         }
         case MessageType::COMMAND:
         {
-            file_logger->info("Handling command");
+            SPDLOG_LOGGER_INFO(file_logger, "Handling command");
 
             if (FD_ISSET(senderSocket, &server->writeSet))
             {
@@ -96,7 +65,7 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
                     Envelope envelope{};
                     envelope.set_type(MessageType::COMMAND);
                     envelope.set_sendtype(MessageSendType::LOCAL);
-                    file_logger->warn("Invalid command: {} from socket {}", req, senderSocket);
+                    SPDLOG_LOGGER_WARN(file_logger, "Invalid command: {} from socket {}", req, senderSocket);
 
 
                     CommandResponse cres{};

@@ -1069,7 +1069,7 @@ class CommandResponse final : public ::google::protobuf::Message
     kResponseFieldNumber = 2,
     kTypeFieldNumber = 1,
   };
-  // string response = 2;
+  // bytes response = 2;
   void clear_response() ;
   const std::string& response() const;
   template <typename Arg_ = const std::string&, typename... Args_>
@@ -1101,7 +1101,7 @@ class CommandResponse final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
-      32, 2>
+      0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -2791,7 +2791,7 @@ inline void CommandResponse::_internal_set_type(::CommandType value) {
   _impl_.type_ = value;
 }
 
-// string response = 2;
+// bytes response = 2;
 inline void CommandResponse::clear_response() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_.ClearToEmpty();
@@ -2805,7 +2805,7 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void CommandResponse::set_response(Arg_&& arg,
                                                      Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.response_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  _impl_.response_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:CommandResponse.response)
 }
 inline std::string* CommandResponse::mutable_response() ABSL_ATTRIBUTE_LIFETIME_BOUND {
