@@ -5,7 +5,7 @@
 
 namespace Helpers
 {
-    bool isInteger(const std::string& s) {
+    inline bool isInteger(const std::string& s) {
         try {
             size_t pos;
             std::stoi(s, &pos);

@@ -97,8 +97,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
 
 
         SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
-        user->set_connectedroomid(roomContainer->room->id());
-        roomContainer->AddUser(user);
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
 
         CommandResponse cres{};
 
@@ -214,7 +213,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         }
 
 
-        user->set_connectedroomid(roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
 
 
         CommandResponse cres{};
@@ -232,7 +231,6 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
 
         SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
-        roomContainer->AddUser(user);
         SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
         envelope.Clear();
 

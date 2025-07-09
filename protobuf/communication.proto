@@ -53,6 +53,7 @@ enum CommandType {
     LEAVE_ROOM = 4;
     ROOM_LIST = 5;
     CREATE_ROOM = 6;
+    USER_WHISPER = 7;
 }
 
 message CommandRequest {
@@ -77,6 +78,7 @@ enum MessageSendType {
     WITHIN_ROOM = 1; // send to all users within room
     WITHIN_ROOM_EXCEPT_THIS = 2; // send to all users within room except sender
     GLOBAL = 3; // send to all users
+    DIRECT = 4; // send to specific user
 }
 
 message Envelope {
@@ -85,3 +87,8 @@ message Envelope {
     bytes payload = 3;
 }
 
+message WhisperData
+{
+    string from = 1; // userName#ID
+    string message = 2;
+}

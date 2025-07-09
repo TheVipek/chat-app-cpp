@@ -126,7 +126,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
 
         // connect to newly created room
-        user->set_connectedroomid(roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
         std::string newUserData;
         user->SerializeToString(&newUserData);
 
@@ -140,7 +140,6 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
-        roomContainer->AddUser(user);
         SPDLOG_LOGGER_INFO(file_logger, "Created and connected user {} to room {}", user->name(), roomContainer->room->name());
         return;
     }
@@ -233,7 +232,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
 
         // connect to newly created room
-        user->set_connectedroomid(roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
         std::string newUserData;
         user->SerializeToString(&newUserData);
 
@@ -247,7 +246,6 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
         SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
-        roomContainer->AddUser(user);
         SPDLOG_LOGGER_INFO(file_logger, "Created and connected user {} to room {}", user->name(), roomContainer->room->name());
         return;
 

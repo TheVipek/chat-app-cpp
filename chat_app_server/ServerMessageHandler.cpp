@@ -6,6 +6,7 @@
 #include "Commands/roomlistcommand.h"
 #include "Commands/leaveroomcommand.h"
 #include "Commands/createroom.h"
+#include "Commands/whispercommand.h"
 
 ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdlog::logger> _file_logger) {
 	server = _server;
@@ -16,6 +17,13 @@ ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdl
     commands["/leaveRoom"] = std::make_unique<LeaveRoomCommand>(_file_logger);
     commands["/roomList"] = std::make_unique<RoomListCommand>(_file_logger);
     commands["/createRoom"] = std::make_unique<CreateRoom>(_file_logger);
+    commands["/whisper"] = std::make_unique<WhisperCommand>(_file_logger);
+
+}
+
+ServerMessageHandler::~ServerMessageHandler()
+{
+    commands.clear();
 }
 
 void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET senderSocket)
@@ -38,6 +46,8 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
             if (envelope.type() != MessageType::PING)
             {
                 closesocket(senderSocket);
+                auto user = server->connectedUsers[senderSocket];
+
                 server->connectedUsers.erase(senderSocket);
                 server->lastTimeActivity.erase(senderSocket);
             }

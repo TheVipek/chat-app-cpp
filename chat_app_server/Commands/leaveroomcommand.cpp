@@ -37,11 +37,8 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         envelope.set_payload(msg);
         server->Send(envelope, senderSocket);
 
-
-        //remove old user
-        roomContainer->RemoveUser(user);
-        //override old user
-        user->set_connectedroomid(-1);
+        //update client
+        server->UpdateExistingUserData(senderSocket, -1, "", -1);
         SPDLOG_LOGGER_INFO(file_logger, "Removed user {} from room {}", user->name(), roomContainer->room->name());
 
 

@@ -60,6 +60,7 @@ std::map<MessageType, std::string> messageTypeMappings = {
 	{ MessageType::PING, "PING"},
 	{ MessageType::USER_JOIN_ROOM, "USER_JOIN_ROOM"},
 	{ MessageType::USER_LEAVE_ROOM, "USER_LEAVE_ROOM" }
+
 };
 std::string messageTypeDefault = "Unknown MessageType";
 
@@ -70,7 +71,8 @@ std::map<CommandType, std::string> commandTypeMappings = {
 	{ CommandType::JOIN_ROOM, "JOIN_ROOM"},
 	{ CommandType::LEAVE_ROOM, "LEAVE_ROOM"},
 	{ CommandType::NICKNAME, "NICKNAME"},
-	{ CommandType::ROOM_LIST, "ROOM_LIST"}
+	{ CommandType::ROOM_LIST, "ROOM_LIST"},
+	{ CommandType::USER_WHISPER, "WHISPER"}
 };	
 std::string commandTypeDefault = "Unknown CommandType";
 
@@ -91,16 +93,6 @@ U GetEnumValue(T enumValue, std::map<T, U>& map, U& defaultValue)
 	}
 
 	return defaultValue;
-}
-
-ftxui::Color GetColorDependingOnMessageType(ChatMessageType type)
-{
-	if (colorDependingOnChatMessage.contains(type))
-	{
-		return colorDependingOnChatMessage[type];
-	}
-
-	return Color::IndianRedBis;
 }
 
 void EndProcess()
@@ -439,6 +431,17 @@ void ListenForMessages(SOCKET clientSocket)
 				clientUser.ParseFromString(cres.response());
 				ChatMessage chatMessage = GetChatMessage("Disconnected from the channel.", GetEnumValue(envelope.sendtype(), sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
 				AddChatMessage(chatMessage);
+
+				break;
+			}
+			case CommandType::USER_WHISPER:
+			{
+				WhisperData wd; 
+				wd.ParseFromString(cres.response());
+
+				ChatMessage chatMessage = GetChatMessage(wd.message(), wd.from(), ChatMessageType::WHISPER);
+				AddChatMessage(chatMessage);
+
 
 				break;
 			}

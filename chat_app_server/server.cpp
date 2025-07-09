@@ -8,6 +8,7 @@ Server::Server(std::shared_ptr<spdlog::logger> _file_logger) {
     file_logger = _file_logger;
     srand(time(0));
     connectedUsers = std::map<SOCKET, ClientUser*>();
+    userByID = std::unordered_map<int, ClientUser*>();
     roomContainers = std::map<std::string, RoomContainer*>();
     initialized = false;
     this->maxConnections = MAX_CONNECTIONS;
@@ -15,8 +16,25 @@ Server::Server(std::shared_ptr<spdlog::logger> _file_logger) {
 }
 
 Server::~Server() {
+    closesocket(serverSocket);
+
     delete(serverMessageHandler);
     delete(serverConfig);
+
+    auto tempConnectedUsers = std::map<SOCKET, ClientUser*>(connectedUsers);
+
+    for (auto u : tempConnectedUsers)
+    {
+        RemoveUser(u.first, false);
+    }
+    connectedUsers.clear();
+    for (auto r : roomContainers)
+    {
+        delete(r.second);
+    }
+    roomContainers.clear();
+
+    userByID.clear();
 }
 
 bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
@@ -94,8 +112,6 @@ bool Server::IsInitialized()
     return initialized;
 }
 
-
-
 void Server::PingClients() {
     Envelope ping_envelope{};
     ping_envelope.set_type(MessageType::PING);
@@ -108,27 +124,29 @@ void Server::PingClients() {
 
     for (int i = 0; i < writeSet.fd_count; i++) {
         SOCKET soc = writeSet.fd_array[i];
-        if (now - lastTimeActivity[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
-            auto user = connectedUsers[soc];
-            SPDLOG_LOGGER_INFO(file_logger, "Ping socket {}, user {}#{}, payload {}", soc, user->name(), user->id(), ping_envelope.payload());
-            bool failed = Send(ping_envelope, soc).size() > 0;
-            if (failed)
-            {
-                SPDLOG_LOGGER_WARN(file_logger, "SOCKET {} marked as to be kicked, due to network issues.", soc);
-                socketsToRemove.push_back(soc);
-                continue;
+        if (connectedUsers.contains(soc))
+        {
+            if (now - lastTimeActivity[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
+                auto user = connectedUsers[soc];
+                SPDLOG_LOGGER_INFO(file_logger, "Ping socket {}, user {}#{}, payload {}", soc, user->name(), user->id(), ping_envelope.payload());
+                bool failed = Send(ping_envelope, soc).size() > 0;
+                if (failed)
+                {
+                    SPDLOG_LOGGER_WARN(file_logger, "SOCKET {} marked as to be kicked, due to network issues.", soc);
+                    socketsToRemove.push_back(soc);
+                    continue;
+                }
+                UpdateClientActivity(soc);
             }
-            UpdateClientActivity(soc);
         }
     }
 
     for (auto soc : socketsToRemove)
     {
-        connectedUsers.erase(soc);
-        lastTimeActivity.erase(soc);
-        closesocket(soc);
+        RemoveUser(soc, true);
     }
 }
+
 void Server::UpdateClientActivity(SOCKET sender) {
     auto now = std::chrono::steady_clock::now();
     lastTimeActivity[sender] = now;
@@ -161,7 +179,7 @@ void Server::Run() {
         if (select(0, &readSet, &writeSet, NULL, NULL) == SOCKET_ERROR)
         {
             SPDLOG_LOGGER_ERROR(file_logger, "SELECT ERROR {}", WSAGetLastError());
-            exit(1);
+            throw WSAGetLastError();
         }
 
         for (u_int i = 0; i < readSet.fd_count; i++)
@@ -179,12 +197,7 @@ void Server::Run() {
                 }
                 else
                 {
-                    ClientUser* newUser = new ClientUser();
-                    newUser->set_id(-1);
-                    newUser->set_name("UnknownUser");
-                    newUser->set_connectedroomid(-1);
-
-                    connectedUsers.insert({ newfd, newUser });
+                    AddStartUpUser(newfd, -1, "UnknownUser", -1);
                     fdmax = (newfd > fdmax) ? newfd : fdmax;
 
                     char ip[INET_ADDRSTRLEN];
@@ -204,27 +217,7 @@ void Server::Run() {
                     if (receivedBytes <= 0)
                     {
                         SPDLOG_LOGGER_ERROR(file_logger, "Lost connection to socket {}? error {} bytes received {}", senderSocket, WSAGetLastError(), receivedBytes);
-
-                        auto user = connectedUsers[senderSocket];
-                        if (user->connectedroomid() != -1)
-                        {
-                            //i will create more advanced handling for server if needed in future
-                            Envelope envelope2{};
-                            envelope2.set_type(MessageType::USER_LEAVE_ROOM);
-                            envelope2.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
-                            std::string msg = user->name() + "has been kicked from the server due to network error.";
-                            envelope2.set_payload(msg);
-                            Send(envelope2, senderSocket);
-
-                            auto roomContainer = GetRoomContainer(user->connectedroomid());
-                            roomContainer->RemoveUser(user);
-
-                        }
-
-
-
-                        closesocket(senderSocket);
-                        connectedUsers.erase(senderSocket);
+                        RemoveUser(senderSocket, true);
                         continue;
                     }
                     uint32_t frameSize = *reinterpret_cast<uint32_t*>(frameSizeBuffer);
@@ -238,28 +231,7 @@ void Server::Run() {
                     if (receivedBytes <= 0)
                     {
                         SPDLOG_LOGGER_ERROR(file_logger, "Lost connection to socket {}? error {} bytes received {}", senderSocket, WSAGetLastError(), receivedBytes);
-
-                        auto user = connectedUsers[senderSocket];
-                        if (user->connectedroomid() != -1)
-                        {
-                            //i will create more advanced handling for server if needed in future
-                            Envelope envelope2{};
-                            envelope2.set_type(MessageType::USER_LEAVE_ROOM);
-                            envelope2.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
-                            std::string msg = user->name() + "has been kicked from the server due to network error.";
-                            envelope2.set_payload(msg);
-                            Send(envelope2, senderSocket);
-
-                            auto roomContainer = GetRoomContainer(user->connectedroomid());
-                            roomContainer->RemoveUser(user);
-
-                        }
-
-
-
-                        closesocket(senderSocket);
-                        connectedUsers.erase(senderSocket);
-
+                        RemoveUser(senderSocket, true);
                         continue;
                     }
                    
@@ -280,6 +252,7 @@ void Server::Stop() {
     if (!initialized)
         return;
 }
+
 std::vector<SOCKET> Server::Send(Envelope envelope, SOCKET senderSocket)
 {
     std::vector<SOCKET> failedSockets;
@@ -364,6 +337,61 @@ std::vector<SOCKET> Server::Send(Envelope envelope, SOCKET senderSocket)
 
     return failedSockets;
 }
+
+bool Server::SendDirect(Envelope envelope, SOCKET targetSocket)
+{
+    std::string envelopeParsed;
+    envelope.SerializeToString(&envelopeParsed);
+
+
+    auto sendToSocket = [&](SOCKET dest) {
+        if (!FD_ISSET(dest, &writeSet)) return false;
+
+        std::string envelopeParsed = envelope.SerializeAsString();
+        uint32_t envelopeSize = static_cast<uint32_t>(envelopeParsed.size());
+        uint32_t networkOrderSize = htonl(envelopeSize);
+
+        // Send length
+        const char* frameData = reinterpret_cast<const char*>(&networkOrderSize);
+        int frameTotalSent = 0;
+        while (frameTotalSent < 4) {
+            int n = send(dest, frameData + frameTotalSent, 4 - frameTotalSent, 0);
+            if (n == SOCKET_ERROR) {
+                int err = WSAGetLastError();
+                if (err == WSAEWOULDBLOCK) return false;
+                SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", dest, err);
+                return true;
+            }
+            frameTotalSent += n;
+        }
+
+        // Send payload
+        const char* envelopeBuffer = envelopeParsed.data();
+        int totalSent = 0;
+        while (totalSent < envelopeSize) {
+            int n = send(dest, envelopeBuffer + totalSent, envelopeSize - totalSent, 0);
+            if (n == SOCKET_ERROR) {
+                int err = WSAGetLastError();
+                if (err == WSAEWOULDBLOCK) return false;
+                SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", dest, err);
+                return true;
+            }
+            totalSent += n;
+        }
+        return false;
+        };
+
+    bool sent = false;
+
+    if (targetSocket != serverSocket)
+    {
+        sent = sendToSocket(targetSocket);
+    }
+
+
+    return sent;
+}
+
 int Server::GetNewUserIdentifier() {
     int uniqueID = (rand() % 10000000);
     while (true) {
@@ -383,6 +411,118 @@ int Server::GetNewUserIdentifier() {
 
 ClientUser* Server::GetUser(SOCKET socket) {
     return connectedUsers[socket];
+}
+ClientUser* Server::GetUser(int userID)
+{
+    if (userByID.contains(userID))
+    {
+        return userByID[userID];
+    }
+    return nullptr;
+}
+SOCKET Server::GetUserSocket(ClientUser* client)
+{
+    for (auto v : connectedUsers)
+    {
+        if (v.second->id() == client->id())
+        {
+            return v.first;
+        }
+    }
+
+    return -1;
+}
+void Server::AddStartUpUser(SOCKET sock, int id, std::string name, int roomID)
+{
+
+    ClientUser* newUser = new ClientUser();
+    newUser->set_id(-1);
+    newUser->set_name("UnknownUser");
+    newUser->set_connectedroomid(-1);
+
+    connectedUsers.insert({ sock, newUser });
+    //skip adding to userByID
+
+}
+void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID)
+{
+    if (connectedUsers.contains(sock))
+    {
+        auto user = connectedUsers[sock];
+
+        if (id != -1 && user->id() != id)
+        {
+            if (userByID.contains(user->id()))
+            {
+                userByID.erase(user->id());
+            }
+            user->set_id(id);
+            userByID.insert({ user->id(), user});
+        }
+
+        if (!name.empty() && user->name() != name)
+        {
+            user->set_name(name);
+        }
+
+        if (user->connectedroomid() != roomID)
+        {
+            if (user->connectedroomid() != -1)
+            {
+                auto oldRoomContainer = GetRoomContainer(user->connectedroomid());
+                if (oldRoomContainer != nullptr)
+                {
+                    oldRoomContainer->RemoveUser(user);
+                }
+            }
+
+            auto newRoomContainer = GetRoomContainer(roomID);
+
+            if (newRoomContainer != nullptr)
+            {
+                user->set_connectedroomid(roomID);
+                newRoomContainer->AddUser(user);
+            }
+        }
+    }
+}
+void Server::RemoveUser(SOCKET socket, bool notify)
+{
+    if (connectedUsers.contains(socket))
+    {
+        auto user = connectedUsers[socket];
+        connectedUsers.erase(socket);
+
+        if (userByID.contains(user->id()))
+        {
+            userByID.erase(user->id());
+        }
+
+        if (lastTimeActivity.contains(socket))
+        {
+            lastTimeActivity.erase(socket);
+        }
+        if (user->connectedroomid() != -1)
+        {
+            if (notify) {
+                //i will create more advanced handling for server if needed in future
+                Envelope envelope2{};
+                envelope2.set_type(MessageType::USER_LEAVE_ROOM);
+                envelope2.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);
+                std::string msg = user->name() + "has been kicked from the server due to network error.";
+                envelope2.set_payload(msg);
+                Send(envelope2, socket);
+            }
+
+            auto roomContainer = GetRoomContainer(user->connectedroomid());
+            roomContainer->RemoveUser(user);
+        }
+
+        delete user;
+    }
+
+    closesocket(socket);
+
 }
 bool Server::HasRoom(std::string roomName) {
     return roomContainers.contains(roomName);

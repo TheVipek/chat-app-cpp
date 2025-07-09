@@ -9,10 +9,15 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <exception>
+#include <typeinfo>
+#include <csignal>
 #pragma comment(lib, "ws2_32.lib")
 
 std::shared_ptr<spdlog::logger> file_logger;
 Server* server;
+
+
 
 int main()
 {
@@ -68,8 +73,31 @@ int main()
     server->Initialize(serverConfig);  //localhost
 
 
-    server->Run();
+    try
+    {
+        server->Run();
+    }
+    catch (const std::exception& e)
+    {
+        SPDLOG_LOGGER_CRITICAL(file_logger, "Standard exception: {} - {}", typeid(e).name(), e.what());
+        SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
+        delete server;
+        WSACleanup();
+        return 0;
+
+    }
+    catch (...)
+    {
+        SPDLOG_LOGGER_CRITICAL(file_logger, "Server crashed, unknown reason.");
+        SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
+        delete server;
+        WSACleanup();
+        return 0;
+    }
 
 
     SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
+    delete server;
+    WSACleanup();
+    return 1;
 }
