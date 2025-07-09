@@ -1,5 +1,7 @@
 #include "setnickcommand.h"
 
+#define MAX_USERNAME_SIZE 16
+
 void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSocket, Server* server)
 {
     Envelope envelope{};
@@ -15,6 +17,15 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
             CommandResponse cres{};
             SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
             cres.set_response("Invalid usage of /setnick (eg. /setnick SIGMA)");
+            cres.set_type(CommandType::INVALID);
+            envelope.set_payload(cres.SerializeAsString());
+        }
+        else if (proposedUserName.size() > MAX_USERNAME_SIZE)
+        {
+            CommandResponse cres{};
+            SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
+            std::string res = std::format("Maximum size of username is {} characters", MAX_USERNAME_SIZE);
+            cres.set_response(res);
             cres.set_type(CommandType::INVALID);
             envelope.set_payload(cres.SerializeAsString());
         }

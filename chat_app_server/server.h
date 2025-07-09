@@ -41,6 +41,7 @@ public:
 	bool UserExists(int userID);
 	ClientUser* GetUser(SOCKET socket);
 	ClientUser* GetUser(int userID);
+	std::vector<ClientUser> GetAllUsersTemp();
 	SOCKET GetUserSocket(ClientUser* client);
 
 	/// <summary>
@@ -65,6 +66,8 @@ public:
 	/// <param name="socket"></param>
 	/// <param name="notify">If true and user is currently in room, it will send notification to the other clients</param>
 	void RemoveUser(SOCKET socket, bool notify);
+
+	void SendUpdateOfAllUsers();
 protected:
 	std::shared_ptr<spdlog::logger> file_logger;
 	bool initialized;

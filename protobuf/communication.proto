@@ -35,6 +35,11 @@ message ClientUser {
     string roomName = 4;
 }
 
+message ClientUserList
+{
+    repeated ClientUser users = 1;
+}
+
 message ChatMessage {
     string sender = 1;
     string message = 2;
@@ -72,6 +77,7 @@ enum MessageType {
     USER_LEAVE_ROOM = 2;
     COMMAND = 4;
     PING = 5;
+    ALL_USERS_UPDATE = 6;
 }
 
 enum MessageSendType {

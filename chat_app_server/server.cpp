@@ -449,6 +449,26 @@ ClientUser* Server::GetUser(int userID)
     }
     return nullptr;
 }
+std::vector<ClientUser> Server::GetAllUsersTemp()
+{
+    std::vector<ClientUser> users;
+    for (auto u : connectedUsers)
+    {
+        auto instance = u.second;
+        if (instance->id() == -1)
+            continue;
+
+        ClientUser user{};
+
+        user.set_id(instance->id());
+        user.set_name(instance->name());
+        user.set_connectedroomid(instance->connectedroomid());
+        user.set_roomname(instance->roomname());
+        users.push_back(user);
+    }
+
+    return users;
+}
 SOCKET Server::GetUserSocket(ClientUser* client)
 {
     for (auto v : connectedUsers)
@@ -471,7 +491,6 @@ void Server::AddStartUpUser(SOCKET sock)
     newUser->set_roomname("");
     connectedUsers.insert({ sock, newUser });
     //skip adding to userByID
-
 }
 void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID, std::string roomName)
 {
@@ -514,6 +533,8 @@ void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int r
                 newRoomContainer->AddUser(user);
             }
         }
+
+        SendUpdateOfAllUsers();
     }
 }
 void Server::RemoveUser(SOCKET socket, bool notify)
@@ -553,6 +574,29 @@ void Server::RemoveUser(SOCKET socket, bool notify)
 
     closesocket(socket);
 
+    if (notify)
+    {
+        SendUpdateOfAllUsers();
+    }
+}
+
+void Server::SendUpdateOfAllUsers()
+{
+    Envelope envelope2{};
+    envelope2.set_type(MessageType::ALL_USERS_UPDATE);
+    envelope2.set_sendtype(MessageSendType::GLOBAL);
+
+    auto users = GetAllUsersTemp();
+    ClientUserList cul {};
+    for (const auto& user : users) {
+        *cul.add_users() = user; // Add each user to the list
+    }
+
+    std::string serialized;
+    cul.SerializeToString(&serialized);
+
+    envelope2.set_payload(serialized);
+    Send(envelope2, serverSocket);
 }
 bool Server::HasRoom(std::string roomName) {
     return roomContainers.contains(roomName);

@@ -34,6 +34,8 @@ public:
 	ChatMessage chatMessage;
 };
 
+std::mutex allUsersMutex;
+ClientUserList allUsers;
 SOCKET clientSocket;
 std::string currentInput;
 ClientUser clientUser;
@@ -45,7 +47,8 @@ std::thread pingThread;
 std::thread syncChatThread;
 std::shared_ptr<spdlog::logger> file_logger;
 uint32_t frameSize = 0;
-float scroll_y = 1.f;
+float chatScrollValue = 1.f;
+float allUsersScrolllValue = 1.f;
 std::map<MessageSendType, std::string> sendTypeMappings = {
 		{ MessageSendType::LOCAL, "[LOCAL]"},
 		{ MessageSendType::GLOBAL, "[GLOBAL]"},
@@ -238,7 +241,7 @@ void UpdateChat() {
 			{
 				input_component->Render()
 			}) | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 100) | borderLight;
-		});
+	});
 	
 	auto headerContent = Renderer([=] {
 		Element channelName = text(clientUser.roomname() == "" ? "Default Room" : clientUser.roomname() + " Room") | ftxui::color(colorOfRoomText);
@@ -276,24 +279,40 @@ void UpdateChat() {
 		}
 		chatMutex.unlock();
 
-		return vbox(message_elements) | focusPositionRelative(0, scroll_y) | frame | flex;
-		});
+		return vbox(message_elements) | focusPositionRelative(0, chatScrollValue) | frame | flex;
+	});
 
-	SliderOption<float> option_y;
-	option_y.value = &scroll_y;
-	option_y.min = 0.f;
-	option_y.max = 1.f;
-	option_y.increment = 0.01f;
-	option_y.direction = Direction::Down;
-	option_y.color_active = Color::Yellow;
-	option_y.color_inactive = Color::YellowLight;
-	auto scrollbar_y = Slider(option_y);
+	SliderOption<float> chatSliderOption;
+	chatSliderOption.value = &chatScrollValue;
+	chatSliderOption.min = 0.f;
+	chatSliderOption.max = 1.f;
+	chatSliderOption.increment = 0.01f;
+	chatSliderOption.direction = Direction::Down;
+	chatSliderOption.color_active = Color::Yellow;
+	chatSliderOption.color_inactive = Color::YellowLight;
+	auto chatScrollBarY = Slider(chatSliderOption);
 
+	SliderOption<float> allUserOption;
+	allUserOption.value = &allUsersScrolllValue;
+	allUserOption.min = 0.f;
+	allUserOption.max = 1.f;
+	allUserOption.increment = 0.01f;
+	allUserOption.direction = Direction::Down;
+	allUserOption.color_active = Color::Yellow;
+	allUserOption.color_inactive = Color::YellowLight;
+	auto allUserScrollBarY = Slider(allUserOption);
 
 	auto allUsersContent = Renderer([=] {
-
-		return vbox();
-		});
+		Elements allUsersElements;
+		allUsersMutex.lock();
+		for (auto a : allUsers.users())
+		{
+			std::string userText = a.name() + "#" + std::to_string(a.id());
+			allUsersElements.push_back(hbox(text(userText)));
+		}
+		allUsersMutex.unlock();
+		return vbox(allUsersElements) | focusPositionRelative(0, allUsersScrolllValue) | frame | flex;
+	});
 
 
 	auto main_component = Container::Vertical({
@@ -301,10 +320,11 @@ void UpdateChat() {
 		Container::Horizontal({
 			Container::Horizontal({
 				textContent,
-			    scrollbar_y,
+			    chatScrollBarY,
 			}) | borderLight | flex,
 			Container::Horizontal({
-				allUsersContent	
+				allUsersContent,
+				allUserScrollBarY
 			}) | borderLight | flex | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 20)
 		  }) | flex,
 		input_component | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 100) | borderLight,
@@ -421,6 +441,15 @@ void ListenForMessages(SOCKET clientSocket)
 			envelope.set_sendtype(MessageSendType::LOCAL);
 			envelope.set_payload("");
 			SendToServer(envelope, clientSocket);
+			break;
+		}
+		case MessageType::ALL_USERS_UPDATE:
+		{
+			SPDLOG_LOGGER_INFO(file_logger, "All users update!");
+			allUsersMutex.lock();
+			allUsers.ParseFromString(envelope.payload());
+			allUsersMutex.unlock();
+			
 			break;
 		}
 		case MessageType::COMMAND:

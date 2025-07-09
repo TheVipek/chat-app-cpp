@@ -265,6 +265,31 @@ struct ChatMessageDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
 
+inline constexpr ClientUserList::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : users_{},
+        _cached_size_{0} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR ClientUserList::ClientUserList(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct ClientUserListDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ClientUserListDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ClientUserListDefaultTypeInternal() {}
+  union {
+    ClientUserList _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ClientUserListDefaultTypeInternal _ClientUserList_default_instance_;
+
 inline constexpr AdvancedServerConfig::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -345,6 +370,15 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.connectedroomid_),
         PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.roomname_),
         ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::ClientUserList, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::ClientUserList, _impl_.users_),
+        ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::ChatMessage, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
@@ -404,17 +438,19 @@ static const ::_pbi::MigrationSchema
         {12, -1, -1, sizeof(::Room)},
         {26, -1, -1, sizeof(::SimpleServerConfig)},
         {36, -1, -1, sizeof(::ClientUser)},
-        {48, -1, -1, sizeof(::ChatMessage)},
-        {59, -1, -1, sizeof(::CommandRequest)},
-        {69, -1, -1, sizeof(::CommandResponse)},
-        {79, -1, -1, sizeof(::Envelope)},
-        {90, -1, -1, sizeof(::WhisperData)},
+        {48, -1, -1, sizeof(::ClientUserList)},
+        {57, -1, -1, sizeof(::ChatMessage)},
+        {68, -1, -1, sizeof(::CommandRequest)},
+        {78, -1, -1, sizeof(::CommandResponse)},
+        {88, -1, -1, sizeof(::Envelope)},
+        {99, -1, -1, sizeof(::WhisperData)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_AdvancedServerConfig_default_instance_._instance,
     &::_Room_default_instance_._instance,
     &::_SimpleServerConfig_default_instance_._instance,
     &::_ClientUser_default_instance_._instance,
+    &::_ClientUserList_default_instance_._instance,
     &::_ChatMessage_default_instance_._instance,
     &::_CommandRequest_default_instance_._instance,
     &::_CommandResponse_default_instance_._instance,
@@ -431,38 +467,40 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     "\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServerConfi"
     "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"Q\n\nClie"
     "ntUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017conn"
-    "ectedRoomID\030\003 \001(\005\022\020\n\010roomName\030\004 \001(\t\"U\n\013C"
-    "hatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007message\030\002 "
-    "\001(\t\022%\n\013messageType\030\003 \001(\0162\020.ChatMessageTy"
-    "pe\"<\n\016CommandRequest\022\017\n\007request\030\001 \001(\t\022\031\n"
-    "\021requestParameters\030\002 \003(\t\"\?\n\017CommandRespo"
-    "nse\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n\010respo"
-    "nse\030\002 \001(\014\"[\n\010Envelope\022\"\n\010sendType\030\001 \001(\0162"
-    "\020.MessageSendType\022\032\n\004type\030\002 \001(\0162\014.Messag"
-    "eType\022\017\n\007payload\030\003 \001(\014\",\n\013WhisperData\022\014\n"
-    "\004from\030\001 \001(\t\022\017\n\007message\030\002 \001(\t*D\n\017ChatMess"
-    "ageType\022\023\n\017MESSAGE_IN_ROOM\020\000\022\017\n\013INFORMAT"
-    "ION\020\001\022\013\n\007WHISPER\020\002*\203\001\n\013CommandType\022\013\n\007IN"
-    "VALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_"
-    "ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tROOM_LIST\020\005\022\017\n"
-    "\013CREATE_ROOM\020\006\022\020\n\014USER_WHISPER\020\007*_\n\013Mess"
-    "ageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_R"
-    "OOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022"
-    "\010\n\004PING\020\005*b\n\017MessageSendType\022\t\n\005LOCAL\020\000\022"
-    "\017\n\013WITHIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_T"
-    "HIS\020\002\022\n\n\006GLOBAL\020\003\022\n\n\006DIRECT\020\004b\006proto3"
+    "ectedRoomID\030\003 \001(\005\022\020\n\010roomName\030\004 \001(\t\",\n\016C"
+    "lientUserList\022\032\n\005users\030\001 \003(\0132\013.ClientUse"
+    "r\"U\n\013ChatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007mess"
+    "age\030\002 \001(\t\022%\n\013messageType\030\003 \001(\0162\020.ChatMes"
+    "sageType\"<\n\016CommandRequest\022\017\n\007request\030\001 "
+    "\001(\t\022\031\n\021requestParameters\030\002 \003(\t\"\?\n\017Comman"
+    "dResponse\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n"
+    "\010response\030\002 \001(\014\"[\n\010Envelope\022\"\n\010sendType\030"
+    "\001 \001(\0162\020.MessageSendType\022\032\n\004type\030\002 \001(\0162\014."
+    "MessageType\022\017\n\007payload\030\003 \001(\014\",\n\013WhisperD"
+    "ata\022\014\n\004from\030\001 \001(\t\022\017\n\007message\030\002 \001(\t*D\n\017Ch"
+    "atMessageType\022\023\n\017MESSAGE_IN_ROOM\020\000\022\017\n\013IN"
+    "FORMATION\020\001\022\013\n\007WHISPER\020\002*\203\001\n\013CommandType"
+    "\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n"
+    "\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tROOM_LIS"
+    "T\020\005\022\017\n\013CREATE_ROOM\020\006\022\020\n\014USER_WHISPER\020\007*u"
+    "\n\013MessageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_"
+    "JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMM"
+    "AND\020\004\022\010\n\004PING\020\005\022\024\n\020ALL_USERS_UPDATE\020\006*b\n"
+    "\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_RO"
+    "OM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLO"
+    "BAL\020\003\022\n\n\006DIRECT\020\004b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    1117,
+    1185,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
     nullptr,
     0,
-    9,
+    10,
     schemas,
     file_default_instances,
     TableStruct_communication_2eproto::offsets,
@@ -492,9 +530,9 @@ const ::google::protobuf::EnumDescriptor* MessageType_descriptor() {
   return file_level_enum_descriptors_communication_2eproto[2];
 }
 PROTOBUF_CONSTINIT const uint32_t MessageType_internal_data_[] = {
-    196608u, 32u, 6u, };
+    196608u, 32u, 14u, };
 bool MessageType_IsValid(int value) {
-  return 0 <= value && value <= 5 && ((55u >> value) & 1) != 0;
+  return 0 <= value && value <= 6 && ((119u >> value) & 1) != 0;
 }
 const ::google::protobuf::EnumDescriptor* MessageSendType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_communication_2eproto);
@@ -1746,6 +1784,248 @@ void ClientUser::InternalSwap(ClientUser* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata ClientUser::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class ClientUserList::_Internal {
+ public:
+};
+
+ClientUserList::ClientUserList(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:ClientUserList)
+}
+inline PROTOBUF_NDEBUG_INLINE ClientUserList::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from, const ::ClientUserList& from_msg)
+      : users_{visibility, arena, from.users_},
+        _cached_size_{0} {}
+
+ClientUserList::ClientUserList(
+    ::google::protobuf::Arena* arena,
+    const ClientUserList& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  ClientUserList* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+
+  // @@protoc_insertion_point(copy_constructor:ClientUserList)
+}
+inline PROTOBUF_NDEBUG_INLINE ClientUserList::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : users_{visibility, arena},
+        _cached_size_{0} {}
+
+inline void ClientUserList::SharedCtor(::_pb::Arena* arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+}
+ClientUserList::~ClientUserList() {
+  // @@protoc_insertion_point(destructor:ClientUserList)
+  SharedDtor(*this);
+}
+inline void ClientUserList::SharedDtor(MessageLite& self) {
+  ClientUserList& this_ = static_cast<ClientUserList&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
+}
+
+inline void* ClientUserList::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) ClientUserList(arena);
+}
+constexpr auto ClientUserList::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(ClientUserList, _impl_.users_) +
+          decltype(ClientUserList::_impl_.users_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(ClientUserList), alignof(ClientUserList), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&ClientUserList::PlacementNew_,
+                                 sizeof(ClientUserList),
+                                 alignof(ClientUserList));
+  }
+}
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::internal::ClassDataFull ClientUserList::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_ClientUserList_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &ClientUserList::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<ClientUserList>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        &ClientUserList::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<ClientUserList>(), &ClientUserList::ByteSizeLong,
+            &ClientUserList::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+        PROTOBUF_FIELD_OFFSET(ClientUserList, _impl_._cached_size_),
+        false,
+    },
+    &ClientUserList::kDescriptorMethods,
+    &descriptor_table_communication_2eproto,
+    nullptr,  // tracker
+};
+const ::google::protobuf::internal::ClassData* ClientUserList::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ClientUserList::_table_ = {
+  {
+    0,  // no _has_bits_
+    0, // no _extensions_
+    1, 0,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967294,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    1,  // num_field_entries
+    1,  // num_aux_entries
+    offsetof(decltype(_table_), aux_entries),
+    _class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::ClientUserList>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    // repeated .ClientUser users = 1;
+    {::_pbi::TcParser::FastMtR1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(ClientUserList, _impl_.users_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // repeated .ClientUser users = 1;
+    {PROTOBUF_FIELD_OFFSET(ClientUserList, _impl_.users_), 0, 0,
+    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+  }}, {{
+    {::_pbi::TcParser::GetTable<::ClientUser>()},
+  }}, {{
+  }},
+};
+
+PROTOBUF_NOINLINE void ClientUserList::Clear() {
+// @@protoc_insertion_point(message_clear_start:ClientUserList)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.users_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* ClientUserList::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const ClientUserList& this_ = static_cast<const ClientUserList&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* ClientUserList::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const ClientUserList& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:ClientUserList)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
+
+          // repeated .ClientUser users = 1;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_users_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_users().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    1, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
+
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:ClientUserList)
+          return target;
+        }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t ClientUserList::ByteSizeLong(const MessageLite& base) {
+          const ClientUserList& this_ = static_cast<const ClientUserList&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t ClientUserList::ByteSizeLong() const {
+          const ClientUserList& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:ClientUserList)
+          ::size_t total_size = 0;
+
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
+
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated .ClientUser users = 1;
+            {
+              total_size += 1UL * this_._internal_users_size();
+              for (const auto& msg : this_._internal_users()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
+
+void ClientUserList::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
+  auto* const _this = static_cast<ClientUserList*>(&to_msg);
+  auto& from = static_cast<const ClientUserList&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:ClientUserList)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  _this->_internal_mutable_users()->MergeFrom(
+      from._internal_users());
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void ClientUserList::CopyFrom(const ClientUserList& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:ClientUserList)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void ClientUserList::InternalSwap(ClientUserList* PROTOBUF_RESTRICT other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  _impl_.users_.InternalSwap(&other->_impl_.users_);
+}
+
+::google::protobuf::Metadata ClientUserList::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
