@@ -337,14 +337,21 @@ std::vector<SOCKET> Server::Send(Envelope envelope, SOCKET senderSocket)
     return failedSockets;
 }
 
-bool Server::SendDirect(Envelope envelope, SOCKET targetSocket)
+std::vector<SOCKET> Server::SendDirect(Envelope envelope, SOCKET targetSockets[], int count)
 {
+    std::vector<SOCKET> failedSockets;
     std::string envelopeParsed;
     envelope.SerializeToString(&envelopeParsed);
 
+    // Make a copy of the write set to avoid race conditions
+    fd_set currentWriteSet;
+    FD_ZERO(&currentWriteSet);
+    for (int i = 0; i < writeSet.fd_count; i++) {
+        FD_SET(writeSet.fd_array[i], &currentWriteSet);
+    }
 
     auto sendToSocket = [&](SOCKET dest) {
-        if (!FD_ISSET(dest, &writeSet)) return false;
+        if (!FD_ISSET(dest, &currentWriteSet)) return false;
 
         std::string envelopeParsed = envelope.SerializeAsString();
         uint32_t envelopeSize = static_cast<uint32_t>(envelopeParsed.size());
@@ -382,13 +389,23 @@ bool Server::SendDirect(Envelope envelope, SOCKET targetSocket)
 
     bool sent = false;
 
-    if (targetSocket != serverSocket)
+    for(int i = 0; i < count; i++)
     {
-        sent = sendToSocket(targetSocket);
+        auto s = targetSockets[i];
+        if (s != serverSocket)
+        {
+            sent = sendToSocket(s);
+
+            if (!sent)
+            {
+                failedSockets.push_back(s);
+            }
+        }
     }
+    
 
 
-    return sent;
+    return failedSockets;
 }
 
 int Server::GetNewUserIdentifier() {

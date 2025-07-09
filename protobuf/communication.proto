@@ -79,7 +79,7 @@ enum MessageSendType {
     WITHIN_ROOM = 1; // send to all users within room
     WITHIN_ROOM_EXCEPT_THIS = 2; // send to all users within room except sender
     GLOBAL = 3; // send to all users
-    DIRECT = 4; // send to specific user
+    DIRECT = 4; // send to specific users
 }
 
 message Envelope {

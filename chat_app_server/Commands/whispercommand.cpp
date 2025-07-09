@@ -139,7 +139,8 @@ void WhisperCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         envelope.set_payload(cres.SerializeAsString());
 
         SPDLOG_LOGGER_INFO(file_logger, "Send to client");
-        server->SendDirect(envelope, toSocket);
+        SOCKET sockets[] = { senderSocket, toSocket };
+        server->SendDirect(envelope, sockets, 2);
 
         return;
     }

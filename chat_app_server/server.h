@@ -28,7 +28,7 @@ public:
 	/// <param name="senderSocket"></param>
 	/// <param name="targetSocket"></param>
 	/// <returns></returns>
-	bool SendDirect(Envelope envelope, SOCKET targetSocket);
+	std::vector<SOCKET> SendDirect(Envelope envelope, SOCKET targetSockets[], int count);
 	int GetNewUserIdentifier();
 	bool HasRoom(std::string roomName);
 	int MaxRoomID();
