@@ -233,6 +233,12 @@ void UpdateChat() {
 
 	auto input_component = Input(&currentInput, "Type your message here");
 
+	auto inputContent = Renderer([=] {
+		return vbox(
+			{
+				input_component->Render()
+			}) | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 100) | borderLight;
+		});
 	
 	auto headerContent = Renderer([=] {
 		Element channelName = text(clientUser.roomname() == "" ? "Default Room" : clientUser.roomname() + " Room") | ftxui::color(colorOfRoomText);
@@ -283,14 +289,26 @@ void UpdateChat() {
 	option_y.color_inactive = Color::YellowLight;
 	auto scrollbar_y = Slider(option_y);
 
+
+	auto allUsersContent = Renderer([=] {
+
+		return vbox();
+		});
+
+
 	auto main_component = Container::Vertical({
-		headerContent,
+		headerContent ,
 		Container::Horizontal({
-			  textContent,
-			  scrollbar_y,
-		  }) | borderLight | flex,
-		input_component | borderLight
-		}) | borderLight;
+			Container::Horizontal({
+				textContent,
+			    scrollbar_y,
+			}) | borderLight | flex,
+			Container::Horizontal({
+				allUsersContent	
+			}) | borderLight | flex | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 20)
+		  }) | flex,
+		input_component | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 100) | borderLight,
+		}) | borderLight | size(WidthOrHeight::HEIGHT, Constraint::EQUAL, 100);
 
 
 	auto main_renderer = Renderer(main_component, [&] {
