@@ -32,6 +32,7 @@ message ClientUser {
     int32 id = 1;
     string name = 2;
     int32 connectedRoomID = 3;
+    string roomName = 4;
 }
 
 message ChatMessage {

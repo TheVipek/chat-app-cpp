@@ -29,10 +29,24 @@ ServerMessageHandler::~ServerMessageHandler()
 void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET senderSocket)
 {
     SPDLOG_LOGGER_INFO(file_logger, "Handle Message for socket: {}", senderSocket);
+    if (!server->UserExists(senderSocket))
+    {
+        SPDLOG_LOGGER_WARN(file_logger, "User you're sending from doesn't exist (?)");
+        Envelope errorEnvelope{};
+
+        errorEnvelope.set_type(MessageType::CHAT_MESSAGE);
+        errorEnvelope.set_sendtype(MessageSendType::LOCAL);
+        errorEnvelope.set_payload("User you're sending from doesn't exist (?)");
+        server->Send(envelope, senderSocket);
+        return;
+    }
+
+
     switch (envelope.type())
     {
         case MessageType::CHAT_MESSAGE:
         {
+
             auto user = server->GetUser(senderSocket);
             if (user->id() != -1 && user->connectedroomid() != -1)
             {
@@ -43,18 +57,7 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
         }
         case MessageType::PING: 
         {
-            if (envelope.type() != MessageType::PING)
-            {
-                closesocket(senderSocket);
-                auto user = server->connectedUsers[senderSocket];
-
-                server->connectedUsers.erase(senderSocket);
-                server->lastTimeActivity.erase(senderSocket);
-            }
-            else
-            {
-                SPDLOG_LOGGER_INFO(file_logger, "Pong socket {}", senderSocket);
-            }
+            SPDLOG_LOGGER_INFO(file_logger, "Pong socket {}", senderSocket);
             break;
         }
         case MessageType::COMMAND:

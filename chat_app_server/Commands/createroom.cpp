@@ -126,7 +126,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
 
         // connect to newly created room
-        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id(), roomContainer->room->name());
         std::string newUserData;
         user->SerializeToString(&newUserData);
 
@@ -232,7 +232,7 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
 
 
         // connect to newly created room
-        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id(), roomContainer->room->name());
         std::string newUserData;
         user->SerializeToString(&newUserData);
 

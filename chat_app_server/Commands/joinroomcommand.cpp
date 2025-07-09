@@ -97,7 +97,7 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
 
 
         SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
-        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id(), roomContainer->room->name());
 
         CommandResponse cres{};
 
@@ -212,8 +212,9 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
             return;
         }
 
-
-        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id());
+        
+        SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
+        server->UpdateExistingUserData(senderSocket, -1, "", roomContainer->room->id(), roomContainer->room->name());
 
 
         CommandResponse cres{};
@@ -225,13 +226,9 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         cres.set_type(CommandType::JOIN_ROOM);
         envelope.set_payload(cres.SerializeAsString());
 
-        std::string envelopeParsed;
-        envelope.SerializeToString(&envelopeParsed);
-
-
         SPDLOG_LOGGER_INFO(file_logger, "Send to client");
         server->Send(envelope, senderSocket);
-        SPDLOG_LOGGER_INFO(file_logger, "Add user {} to room {}", user->name(), roomContainer->room->name());
+
         envelope.Clear();
 
         envelope.set_sendtype(MessageSendType::WITHIN_ROOM_EXCEPT_THIS);

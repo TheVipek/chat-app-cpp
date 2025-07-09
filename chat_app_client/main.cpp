@@ -84,6 +84,7 @@ std::map<ChatMessageType, ftxui::Color> colorDependingOnChatMessage{
 };
 ftxui::Color colorChatMessageDefault = ftxui::Color::IndianRedBis;
 ftxui::Color timeChatMessageColor = ftxui::Color::DeepSkyBlue1;
+ftxui::Color colorOfRoomText = ftxui::Color::Gold1;
 template<typename T, typename U>
 U GetEnumValue(T enumValue, std::map<T, U>& map, U& defaultValue)
 {
@@ -172,8 +173,11 @@ void HandleInput() {
 	{
 
 		SPDLOG_LOGGER_INFO(file_logger, "Sending command: {}", currentInput);
-		auto msg = GetChatMessage(currentInput, GetEnumValue(MessageSendType::LOCAL, sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
-		AddChatMessage(msg);
+
+		// commented it, because it was making chat less readable
+		// 
+		//auto msg = GetChatMessage(currentInput, GetEnumValue(MessageSendType::LOCAL, sendTypeMappings, messageSendTypeDefault), ChatMessageType::INFORMATION);
+	    //AddChatMessage(msg);
 		
 		std::istringstream iss(currentInput);
 		std::vector<std::string> words;
@@ -229,6 +233,16 @@ void UpdateChat() {
 
 	auto input_component = Input(&currentInput, "Type your message here");
 
+	
+	auto headerContent = Renderer([=] {
+		Element channelName = text(clientUser.roomname() == "" ? "Default Room" : clientUser.roomname() + " Room") | ftxui::color(colorOfRoomText);
+		return vbox(
+			{
+				channelName | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 100),
+				separator()
+		});
+	});
+
 	auto textContent = Renderer([=] {
 		Elements message_elements;
 
@@ -249,7 +263,7 @@ void UpdateChat() {
 			message_elements.push_back(hbox(
 			{
 				styled_time,
-				styled_sender | align_right | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 20) ,
+				styled_sender | align_right | size(WidthOrHeight::WIDTH, Constraint::EQUAL, 30) ,
 				separator(),
 				styled_message,
 			}));
@@ -270,12 +284,13 @@ void UpdateChat() {
 	auto scrollbar_y = Slider(option_y);
 
 	auto main_component = Container::Vertical({
+		headerContent,
 		Container::Horizontal({
 			  textContent,
 			  scrollbar_y,
-		  }) | border | flex,
-		input_component | border
-		});
+		  }) | borderLight | flex,
+		input_component | borderLight
+		}) | borderLight;
 
 
 	auto main_renderer = Renderer(main_component, [&] {

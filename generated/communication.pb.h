@@ -1714,6 +1714,7 @@ class ClientUser final : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
   enum : int {
     kNameFieldNumber = 2,
+    kRoomNameFieldNumber = 4,
     kIdFieldNumber = 1,
     kConnectedRoomIDFieldNumber = 3,
   };
@@ -1731,6 +1732,22 @@ class ClientUser final : public ::google::protobuf::Message
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
       const std::string& value);
   std::string* _internal_mutable_name();
+
+  public:
+  // string roomName = 4;
+  void clear_roomname() ;
+  const std::string& roomname() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_roomname(Arg_&& arg, Args_... args);
+  std::string* mutable_roomname();
+  PROTOBUF_NODISCARD std::string* release_roomname();
+  void set_allocated_roomname(std::string* value);
+
+  private:
+  const std::string& _internal_roomname() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_roomname(
+      const std::string& value);
+  std::string* _internal_mutable_roomname();
 
   public:
   // int32 id = 1;
@@ -1758,8 +1775,8 @@ class ClientUser final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 0,
-      23, 2>
+      2, 4, 0,
+      31, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1777,6 +1794,7 @@ class ClientUser final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const ClientUser& from_msg);
     ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::internal::ArenaStringPtr roomname_;
     ::int32_t id_;
     ::int32_t connectedroomid_;
     ::google::protobuf::internal::CachedSize _cached_size_;
@@ -2744,6 +2762,54 @@ inline ::int32_t ClientUser::_internal_connectedroomid() const {
 inline void ClientUser::_internal_set_connectedroomid(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.connectedroomid_ = value;
+}
+
+// string roomName = 4;
+inline void ClientUser::clear_roomname() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.roomname_.ClearToEmpty();
+}
+inline const std::string& ClientUser::roomname() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:ClientUser.roomName)
+  return _internal_roomname();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void ClientUser::set_roomname(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.roomname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:ClientUser.roomName)
+}
+inline std::string* ClientUser::mutable_roomname() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_roomname();
+  // @@protoc_insertion_point(field_mutable:ClientUser.roomName)
+  return _s;
+}
+inline const std::string& ClientUser::_internal_roomname() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.roomname_.Get();
+}
+inline void ClientUser::_internal_set_roomname(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.roomname_.Set(value, GetArena());
+}
+inline std::string* ClientUser::_internal_mutable_roomname() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.roomname_.Mutable( GetArena());
+}
+inline std::string* ClientUser::release_roomname() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:ClientUser.roomName)
+  return _impl_.roomname_.Release();
+}
+inline void ClientUser::set_allocated_roomname(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.roomname_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.roomname_.IsDefault()) {
+    _impl_.roomname_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:ClientUser.roomName)
 }
 
 // -------------------------------------------------------------------

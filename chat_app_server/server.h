@@ -37,6 +37,8 @@ public:
 	RoomContainer* CreateRoom(std::string name, int maxConnections, bool isPublic, std::string password, bool destroyOnEmpty);
 	void RemoveRoom(std::string name);
 	std::vector<RoomContainer*> GetRoomContainers();
+	bool UserExists(SOCKET socket);
+	bool UserExists(int userID);
 	ClientUser* GetUser(SOCKET socket);
 	ClientUser* GetUser(int userID);
 	SOCKET GetUserSocket(ClientUser* client);
@@ -48,7 +50,7 @@ public:
 	/// <param name="id"></param>
 	/// <param name="name"></param>
 	/// <param name="roomID"></param>
-	void AddStartUpUser(SOCKET sock, int id, std::string name, int roomID);
+	void AddStartUpUser(SOCKET sock);
 	/// <summary>
 	/// Updates existing user data 
 	/// </summary>
@@ -56,7 +58,7 @@ public:
 	/// <param name="id">If -1 is passed, it won't be changed</param>
 	/// <param name="name">If empty string is passed, it won't be changed</param>
 	/// <param name="roomID">It won't be changed only if passed roomID is the same.</param>
-	void UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID);
+	void UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID, std::string roomName);
 	/// <summary>
 	/// Removes user from all collections, closes its socket and free from memory
 	/// </summary>

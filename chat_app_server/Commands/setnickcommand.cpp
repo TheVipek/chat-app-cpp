@@ -21,15 +21,17 @@ void SetNickCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         else
         {
             SPDLOG_LOGGER_INFO(file_logger, "Set proposed nickname {}", proposedUserName.c_str());
+
+
             auto user = server->GetUser(senderSocket);
 
             if (user->id() == -1)
             {
-                server->UpdateExistingUserData(senderSocket, server->GetNewUserIdentifier(), proposedUserName, user->connectedroomid());
+                server->UpdateExistingUserData(senderSocket, server->GetNewUserIdentifier(), proposedUserName, user->connectedroomid(), user->roomname());
             }
             else 
             {
-                server->UpdateExistingUserData(senderSocket, user->id(), proposedUserName, user->connectedroomid());
+                server->UpdateExistingUserData(senderSocket, user->id(), proposedUserName, user->connectedroomid(), user->roomname());
             }
 
            

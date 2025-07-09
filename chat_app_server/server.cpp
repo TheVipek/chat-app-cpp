@@ -124,7 +124,7 @@ void Server::PingClients() {
 
     for (int i = 0; i < writeSet.fd_count; i++) {
         SOCKET soc = writeSet.fd_array[i];
-        if (connectedUsers.contains(soc))
+        if (UserExists(soc))
         {
             if (now - lastTimeActivity[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
                 auto user = connectedUsers[soc];
@@ -197,7 +197,7 @@ void Server::Run() {
                 }
                 else
                 {
-                    AddStartUpUser(newfd, -1, "UnknownUser", -1);
+                    AddStartUpUser(newfd);
                     fdmax = (newfd > fdmax) ? newfd : fdmax;
 
                     char ip[INET_ADDRSTRLEN];
@@ -207,7 +207,7 @@ void Server::Run() {
             //handle data from client
             else
             {
-                if (connectedUsers.contains(senderSocket))
+                if (UserExists(senderSocket))
                 {
                     int receivedBytes;
 
@@ -303,7 +303,6 @@ std::vector<SOCKET> Server::Send(Envelope envelope, SOCKET senderSocket)
         }
         return false;
         };
-
 
     auto msgSendType = envelope.sendtype();
     auto* userSender = GetUser(senderSocket);
@@ -409,12 +408,25 @@ int Server::GetNewUserIdentifier() {
     return uniqueID;
 }
 
-ClientUser* Server::GetUser(SOCKET socket) {
-    return connectedUsers[socket];
+bool Server::UserExists(SOCKET socket)
+{
+    return connectedUsers.contains(socket);
+}
+bool Server::UserExists(int userID)
+{
+    return userByID.contains(userID);
+}
+ClientUser* Server::GetUser(SOCKET socket) 
+{
+    if (UserExists(socket))
+    {
+        return connectedUsers[socket];
+    }
+    return nullptr;
 }
 ClientUser* Server::GetUser(int userID)
 {
-    if (userByID.contains(userID))
+    if (UserExists(userID))
     {
         return userByID[userID];
     }
@@ -432,21 +444,21 @@ SOCKET Server::GetUserSocket(ClientUser* client)
 
     return -1;
 }
-void Server::AddStartUpUser(SOCKET sock, int id, std::string name, int roomID)
+void Server::AddStartUpUser(SOCKET sock)
 {
 
     ClientUser* newUser = new ClientUser();
     newUser->set_id(-1);
     newUser->set_name("UnknownUser");
     newUser->set_connectedroomid(-1);
-
+    newUser->set_roomname("");
     connectedUsers.insert({ sock, newUser });
     //skip adding to userByID
 
 }
-void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID)
+void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID, std::string roomName)
 {
-    if (connectedUsers.contains(sock))
+    if (UserExists(sock))
     {
         auto user = connectedUsers[sock];
 
@@ -481,6 +493,7 @@ void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int r
             if (newRoomContainer != nullptr)
             {
                 user->set_connectedroomid(roomID);
+                user->set_roomname(newRoomContainer->room->name());
                 newRoomContainer->AddUser(user);
             }
         }
@@ -488,20 +501,9 @@ void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int r
 }
 void Server::RemoveUser(SOCKET socket, bool notify)
 {
-    if (connectedUsers.contains(socket))
+    if (UserExists(socket))
     {
         auto user = connectedUsers[socket];
-        connectedUsers.erase(socket);
-
-        if (userByID.contains(user->id()))
-        {
-            userByID.erase(user->id());
-        }
-
-        if (lastTimeActivity.contains(socket))
-        {
-            lastTimeActivity.erase(socket);
-        }
         if (user->connectedroomid() != -1)
         {
             if (notify) {
@@ -516,6 +518,17 @@ void Server::RemoveUser(SOCKET socket, bool notify)
 
             auto roomContainer = GetRoomContainer(user->connectedroomid());
             roomContainer->RemoveUser(user);
+        }
+        connectedUsers.erase(socket);
+
+        if (userByID.contains(user->id()))
+        {
+            userByID.erase(user->id());
+        }
+
+        if (lastTimeActivity.contains(socket))
+        {
+            lastTimeActivity.erase(socket);
         }
 
         delete user;

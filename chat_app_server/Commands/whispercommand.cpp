@@ -7,7 +7,6 @@ void WhisperCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
     envelope.set_sendtype(MessageSendType::LOCAL);
     SPDLOG_LOGGER_INFO(file_logger, "Whisper");
 
-
     auto fromUser = server->GetUser(senderSocket);
 
     if (fromUser->id() == -1)
@@ -73,9 +72,8 @@ void WhisperCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
         }
 
         int userID_int = std::stoi(userID);
-        auto toUser = server->GetUser(userID_int);
 
-        if (toUser == nullptr)
+        if (!server->UserExists(userID_int))
         {
             CommandResponse cres{};
             std::string response = std::format("User {} doesn't exist. ", sendToUser);
@@ -89,6 +87,8 @@ void WhisperCommand::Execute(const CommandRequest& creq, const SOCKET senderSock
 
             return;
         }
+
+        auto toUser = server->GetUser(userID_int);
 
         std::string dataToSend = creq.requestparameters()[1];
 

@@ -207,6 +207,9 @@ inline constexpr ClientUser::Impl_::Impl_(
       : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
+        roomname_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
         id_{0},
         connectedroomid_{0},
         _cached_size_{0} {}
@@ -340,6 +343,7 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.id_),
         PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.name_),
         PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.connectedroomid_),
+        PROTOBUF_FIELD_OFFSET(::ClientUser, _impl_.roomname_),
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::ChatMessage, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -400,11 +404,11 @@ static const ::_pbi::MigrationSchema
         {12, -1, -1, sizeof(::Room)},
         {26, -1, -1, sizeof(::SimpleServerConfig)},
         {36, -1, -1, sizeof(::ClientUser)},
-        {47, -1, -1, sizeof(::ChatMessage)},
-        {58, -1, -1, sizeof(::CommandRequest)},
-        {68, -1, -1, sizeof(::CommandResponse)},
-        {78, -1, -1, sizeof(::Envelope)},
-        {89, -1, -1, sizeof(::WhisperData)},
+        {48, -1, -1, sizeof(::ChatMessage)},
+        {59, -1, -1, sizeof(::CommandRequest)},
+        {69, -1, -1, sizeof(::CommandResponse)},
+        {79, -1, -1, sizeof(::Envelope)},
+        {90, -1, -1, sizeof(::WhisperData)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_AdvancedServerConfig_default_instance_._instance,
@@ -425,34 +429,34 @@ const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECT
     " \001(\005\022\014\n\004name\030\002 \001(\t\022\023\n\013hasPassword\030\003 \001(\010\022"
     "\020\n\010password\030\004 \001(\t\022\026\n\016maxConnections\030\005 \001("
     "\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServerConfi"
-    "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"\?\n\nClie"
+    "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"Q\n\nClie"
     "ntUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017conn"
-    "ectedRoomID\030\003 \001(\005\"U\n\013ChatMessage\022\016\n\006send"
-    "er\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\022%\n\013messageType"
-    "\030\003 \001(\0162\020.ChatMessageType\"<\n\016CommandReque"
-    "st\022\017\n\007request\030\001 \001(\t\022\031\n\021requestParameters"
-    "\030\002 \003(\t\"\?\n\017CommandResponse\022\032\n\004type\030\001 \001(\0162"
-    "\014.CommandType\022\020\n\010response\030\002 \001(\014\"[\n\010Envel"
-    "ope\022\"\n\010sendType\030\001 \001(\0162\020.MessageSendType\022"
-    "\032\n\004type\030\002 \001(\0162\014.MessageType\022\017\n\007payload\030\003"
-    " \001(\014\",\n\013WhisperData\022\014\n\004from\030\001 \001(\t\022\017\n\007mes"
-    "sage\030\002 \001(\t*D\n\017ChatMessageType\022\023\n\017MESSAGE"
-    "_IN_ROOM\020\000\022\017\n\013INFORMATION\020\001\022\013\n\007WHISPER\020\002"
-    "*\203\001\n\013CommandType\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022"
-    "\014\n\010NICKNAME\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE_RO"
-    "OM\020\004\022\r\n\tROOM_LIST\020\005\022\017\n\013CREATE_ROOM\020\006\022\020\n\014"
-    "USER_WHISPER\020\007*_\n\013MessageType\022\020\n\014CHAT_ME"
-    "SSAGE\020\000\022\022\n\016USER_JOIN_ROOM\020\001\022\023\n\017USER_LEAV"
-    "E_ROOM\020\002\022\013\n\007COMMAND\020\004\022\010\n\004PING\020\005*b\n\017Messa"
-    "geSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_ROOM\020\001\022\033"
-    "\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLOBAL\020\003\022"
-    "\n\n\006DIRECT\020\004b\006proto3"
+    "ectedRoomID\030\003 \001(\005\022\020\n\010roomName\030\004 \001(\t\"U\n\013C"
+    "hatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007message\030\002 "
+    "\001(\t\022%\n\013messageType\030\003 \001(\0162\020.ChatMessageTy"
+    "pe\"<\n\016CommandRequest\022\017\n\007request\030\001 \001(\t\022\031\n"
+    "\021requestParameters\030\002 \003(\t\"\?\n\017CommandRespo"
+    "nse\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n\010respo"
+    "nse\030\002 \001(\014\"[\n\010Envelope\022\"\n\010sendType\030\001 \001(\0162"
+    "\020.MessageSendType\022\032\n\004type\030\002 \001(\0162\014.Messag"
+    "eType\022\017\n\007payload\030\003 \001(\014\",\n\013WhisperData\022\014\n"
+    "\004from\030\001 \001(\t\022\017\n\007message\030\002 \001(\t*D\n\017ChatMess"
+    "ageType\022\023\n\017MESSAGE_IN_ROOM\020\000\022\017\n\013INFORMAT"
+    "ION\020\001\022\013\n\007WHISPER\020\002*\203\001\n\013CommandType\022\013\n\007IN"
+    "VALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n\tJOIN_"
+    "ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tROOM_LIST\020\005\022\017\n"
+    "\013CREATE_ROOM\020\006\022\020\n\014USER_WHISPER\020\007*_\n\013Mess"
+    "ageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_JOIN_R"
+    "OOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMMAND\020\004\022"
+    "\010\n\004PING\020\005*b\n\017MessageSendType\022\t\n\005LOCAL\020\000\022"
+    "\017\n\013WITHIN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_T"
+    "HIS\020\002\022\n\n\006GLOBAL\020\003\022\n\n\006DIRECT\020\004b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    1099,
+    1117,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -1439,6 +1443,7 @@ inline PROTOBUF_NDEBUG_INLINE ClientUser::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::ClientUser& from_msg)
       : name_(arena, from.name_),
+        roomname_(arena, from.roomname_),
         _cached_size_{0} {}
 
 ClientUser::ClientUser(
@@ -1468,6 +1473,7 @@ inline PROTOBUF_NDEBUG_INLINE ClientUser::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : name_(arena),
+        roomname_(arena),
         _cached_size_{0} {}
 
 inline void ClientUser::SharedCtor(::_pb::Arena* arena) {
@@ -1488,6 +1494,7 @@ inline void ClientUser::SharedDtor(MessageLite& self) {
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.name_.Destroy();
+  this_._impl_.roomname_.Destroy();
   this_._impl_.~Impl_();
 }
 
@@ -1527,15 +1534,15 @@ const ::google::protobuf::internal::ClassData* ClientUser::GetClassData() const 
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 0, 23, 2> ClientUser::_table_ = {
+const ::_pbi::TcParseTable<2, 4, 0, 31, 2> ClientUser::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    3, 24,  // max_field_number, fast_idx_mask
+    4, 24,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967288,  // skipmap
+    4294967280,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
+    4,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     _class_data_.base(),
@@ -1545,7 +1552,9 @@ const ::_pbi::TcParseTable<2, 3, 0, 23, 2> ClientUser::_table_ = {
     ::_pbi::TcParser::GetTable<::ClientUser>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // string roomName = 4;
+    {::_pbi::TcParser::FastUS1,
+     {34, 63, 0, PROTOBUF_FIELD_OFFSET(ClientUser, _impl_.roomname_)}},
     // int32 id = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(ClientUser, _impl_.id_), 63>(),
      {8, 63, 0, PROTOBUF_FIELD_OFFSET(ClientUser, _impl_.id_)}},
@@ -1567,12 +1576,16 @@ const ::_pbi::TcParseTable<2, 3, 0, 23, 2> ClientUser::_table_ = {
     // int32 connectedRoomID = 3;
     {PROTOBUF_FIELD_OFFSET(ClientUser, _impl_.connectedroomid_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
+    // string roomName = 4;
+    {PROTOBUF_FIELD_OFFSET(ClientUser, _impl_.roomname_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
-    "\12\0\4\0\0\0\0\0"
+    "\12\0\4\0\10\0\0\0"
     "ClientUser"
     "name"
+    "roomName"
   }},
 };
 
@@ -1584,6 +1597,7 @@ PROTOBUF_NOINLINE void ClientUser::Clear() {
   (void) cached_has_bits;
 
   _impl_.name_.ClearToEmpty();
+  _impl_.roomname_.ClearToEmpty();
   ::memset(&_impl_.id_, 0, static_cast<::size_t>(
       reinterpret_cast<char*>(&_impl_.connectedroomid_) -
       reinterpret_cast<char*>(&_impl_.id_)) + sizeof(_impl_.connectedroomid_));
@@ -1627,6 +1641,14 @@ PROTOBUF_NOINLINE void ClientUser::Clear() {
                     stream, this_._internal_connectedroomid(), target);
           }
 
+          // string roomName = 4;
+          if (!this_._internal_roomname().empty()) {
+            const std::string& _s = this_._internal_roomname();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "ClientUser.roomName");
+            target = stream->WriteStringMaybeAliased(4, _s, target);
+          }
+
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -1657,6 +1679,11 @@ PROTOBUF_NOINLINE void ClientUser::Clear() {
               total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                               this_._internal_name());
             }
+            // string roomName = 4;
+            if (!this_._internal_roomname().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_roomname());
+            }
             // int32 id = 1;
             if (this_._internal_id() != 0) {
               total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
@@ -1683,6 +1710,9 @@ void ClientUser::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
+  if (!from._internal_roomname().empty()) {
+    _this->_internal_set_roomname(from._internal_roomname());
+  }
   if (from._internal_id() != 0) {
     _this->_impl_.id_ = from._impl_.id_;
   }
@@ -1706,6 +1736,7 @@ void ClientUser::InternalSwap(ClientUser* PROTOBUF_RESTRICT other) {
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.roomname_, &other->_impl_.roomname_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(ClientUser, _impl_.connectedroomid_)
       + sizeof(ClientUser::_impl_.connectedroomid_)

@@ -14,6 +14,7 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         ClientUser newUser{};
         newUser.CopyFrom(*user);
         newUser.set_connectedroomid(-1);
+        newUser.set_name("");
 
         CommandResponse cres{};
         std::string newUserData;
@@ -37,8 +38,8 @@ void LeaveRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSo
         envelope.set_payload(msg);
         server->Send(envelope, senderSocket);
 
-        //update client
-        server->UpdateExistingUserData(senderSocket, -1, "", -1);
+        //it is being updated this way, because when using Send(), there still should be old room data on the server
+        server->UpdateExistingUserData(senderSocket, -1, "", -1, "");
         SPDLOG_LOGGER_INFO(file_logger, "Removed user {} from room {}", user->name(), roomContainer->room->name());
 
 
