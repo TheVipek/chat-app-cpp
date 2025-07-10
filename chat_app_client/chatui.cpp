@@ -161,7 +161,10 @@ namespace ChatApp
 		if (currentInput.empty())
 			return;
 
-		if (currentInput[0] == '/') // command
+
+
+		//Commands should start with "/" prefix
+		if (currentInput[0] == '/') 
 		{
 
 			SPDLOG_LOGGER_INFO(file_logger, "Sending command: {}", currentInput);
@@ -192,6 +195,7 @@ namespace ChatApp
 			envelope.set_payload(cr.SerializeAsString());
 			chatLogic->SendToServer(envelope);
 		}
+		//Else it is chat message
 		else
 		{
 			auto clientUser = chatLogic->GetClient();

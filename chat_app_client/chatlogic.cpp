@@ -43,7 +43,7 @@ bool ChatLogic::SendToServer(Envelope envelope) {
 			int err = WSAGetLastError();
 			if (err == WSAEWOULDBLOCK) return false;
 			SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", clientSocket, err);
-			return true;
+			return false;
 		}
 		frameTotalSent += n;
 	}
@@ -57,7 +57,7 @@ bool ChatLogic::SendToServer(Envelope envelope) {
 			int err = WSAGetLastError();
 			if (err == WSAEWOULDBLOCK) return false;
 			SPDLOG_LOGGER_ERROR(file_logger, "Send error to socket {}: {}", clientSocket, err);
-			return true;
+			return false;
 		}
 		totalSent += n;
 	}
@@ -247,6 +247,10 @@ void ChatLogic::AddChatMessage(ChatMessage message)
 	clientChatMessage.receiveTime = timestamp;
 	clientChatMessage.chatMessage = message;
 	chatHistory.push_back(clientChatMessage);
+	if (chatHistory.size() > MAX_CHAT_HISTORY)
+	{
+		chatHistory.erase(chatHistory.begin());
+	}
 }
 
 std::vector<ClientChatMessage> ChatLogic::GetChatHistory()
