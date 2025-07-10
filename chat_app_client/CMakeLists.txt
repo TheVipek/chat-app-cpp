@@ -15,7 +15,7 @@ find_package(Protobuf CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../protobuf/communication.proto)
 
-add_executable (chat_app_client "main.cpp" ${PROTO_SRCS} ${PROTO_HDRS}  )
+add_executable (chat_app_client "main.cpp" ${PROTO_SRCS} ${PROTO_HDRS}   "chatui.h" "chatui.cpp" "chatlogic.h" "chatlogic.cpp" "clientchatmessage.h" "helpers.h" "message_mappings.h")
 
 target_include_directories(chat_app_client PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
