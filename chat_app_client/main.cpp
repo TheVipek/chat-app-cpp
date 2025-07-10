@@ -40,7 +40,6 @@ void EndProcess()
 {
 	WSACleanup();
 	SPDLOG_LOGGER_INFO(file_logger, "-----------------------------------PROCESS END-----------------------------------");
-	exit(1);
 }
 
 
@@ -137,7 +136,11 @@ int main()
 	{
 		SPDLOG_LOGGER_CRITICAL(file_logger, "Client crashed.");
 		EndProcess();
+		return 0;
 	}
+
+	EndProcess();
+	return 1;
 }
 
 
