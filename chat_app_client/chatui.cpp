@@ -18,7 +18,6 @@ namespace ChatApp
 
 	void ChatUI::Update()
 	{
-		auto clientUser = chatLogic->GetClient();
 
 		//INPUT
 		auto input_component = Input(&currentInput, "Type your message here");
@@ -31,6 +30,8 @@ namespace ChatApp
 
 		//HEADER
 		auto headerContent = Renderer([=] {
+			auto clientUser = chatLogic->GetClient();
+
 			Element channelName = text(clientUser.roomname() == "" ? "Default Room" : clientUser.roomname() + " Room") | ftxui::color(colorOfRoomText);
 			return vbox(
 				{
