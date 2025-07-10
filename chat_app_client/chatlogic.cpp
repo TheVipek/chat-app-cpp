@@ -15,6 +15,7 @@ ChatLogic::ChatLogic(std::shared_ptr<spdlog::logger> _file_logger)
 	clientUser.set_id(-1);
 	clientUser.set_connectedroomid(-1);
 }
+
 ChatLogic::~ChatLogic()
 {
 	if (initialized)
@@ -22,11 +23,13 @@ ChatLogic::~ChatLogic()
 		closesocket(clientSocket);
 	}
 }
+
 void ChatLogic::Initialize(SOCKET _clientSocket)
 {
 	clientSocket = _clientSocket;
 	initialized = true;
 }
+
 bool ChatLogic::SendToServer(Envelope envelope) {
 	SPDLOG_LOGGER_INFO(file_logger, "Send To Server");
 	std::string serializedEnvelope = envelope.SerializeAsString();
@@ -79,6 +82,8 @@ void ChatLogic::ListenForMessages()
 
 		int receivedBytes;
 		char frameSizeBuffer[sizeof(uint32_t)];
+
+		//first 4 bytes are for message frame
 		receivedBytes = recv(clientSocket, frameSizeBuffer, sizeof(uint32_t), 0);
 		if (receivedBytes <= 0)
 		{

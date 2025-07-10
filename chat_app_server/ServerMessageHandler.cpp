@@ -11,6 +11,8 @@
 ServerMessageHandler::ServerMessageHandler(Server* _server, std::shared_ptr<spdlog::logger> _file_logger) {
 	server = _server;
     file_logger = _file_logger;
+
+    //love command pattern
     commands["/help"] = std::make_unique<HelpCommand>(_file_logger);
     commands["/setnick"] = std::make_unique<SetNickCommand>(_file_logger);
     commands["/joinRoom"] = std::make_unique<JoinRoomCommand>(_file_logger);
@@ -64,30 +66,28 @@ void ServerMessageHandler::HandleMessage(const Envelope& envelope, const SOCKET 
         {
             SPDLOG_LOGGER_INFO(file_logger, "Handling command");
 
-            if (FD_ISSET(senderSocket, &server->writeSet))
+            
+            CommandRequest creq{};
+            creq.ParseFromString(envelope.payload());
+            std::string req = creq.request();
+            if (commands.contains(req))
             {
-                CommandRequest creq{};
-                creq.ParseFromString(envelope.payload());
-                std::string req = creq.request();
-                if (commands.contains(req))
-                {
-                    commands[req]->Execute(creq, senderSocket, server);
-                }
-                else 
-                {
-                    Envelope envelope{};
-                    envelope.set_type(MessageType::COMMAND);
-                    envelope.set_sendtype(MessageSendType::LOCAL);
-                    SPDLOG_LOGGER_WARN(file_logger, "Invalid command: {} from socket {}", req, senderSocket);
+                commands[req]->Execute(creq, senderSocket, server);
+            }
+            else
+            {
+                Envelope errorEnvelope{};
+                errorEnvelope.set_type(MessageType::COMMAND);
+                errorEnvelope.set_sendtype(MessageSendType::LOCAL);
+                SPDLOG_LOGGER_WARN(file_logger, "Invalid command: {} from socket {}", req, senderSocket);
 
 
-                    CommandResponse cres{};
-                    cres.set_response("Invalid Command.");
-                    cres.set_type(CommandType::INVALID);
-                    envelope.set_payload(cres.SerializeAsString());
+                CommandResponse cres{};
+                cres.set_response("Invalid Command.");
+                cres.set_type(CommandType::INVALID);
+                errorEnvelope.set_payload(cres.SerializeAsString());
 
-                    server->Send(envelope, senderSocket);
-                }
+                server->Send(errorEnvelope, senderSocket);
             }
             break;
         }

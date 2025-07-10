@@ -23,6 +23,9 @@
 
 namespace ChatApp
 {
+	/// <summary>
+	/// Responsible for socket communication. It handles sending and receiving messages, manages chat history and list of users.
+	/// </summary>
 	class ChatLogic
 	{
 	public:

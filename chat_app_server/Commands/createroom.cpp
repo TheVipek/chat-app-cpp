@@ -252,7 +252,6 @@ void CreateRoom::Execute(const CommandRequest& creq, const SOCKET senderSocket, 
     }
    
 
-    //INVALID
     CommandResponse cres{};
     SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
     cres.set_response("You need to pass 3 arguments for room creation without password (NAME MAX_CONNECTIONS IS_PUBLIC) or with password (NAME MAX_CONNECTIONS IS_PUBLIC PASSWORD)");

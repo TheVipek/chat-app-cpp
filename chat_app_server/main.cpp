@@ -60,7 +60,8 @@ int main()
     roomsInfo += "\n--- Server Configuration ---\n";
     roomsInfo += "Server Address: " + serverConfig->server().address() + "\n";
     roomsInfo += "Server Port: " + std::to_string(serverConfig->server().port()) + "\n";
-
+    roomsInfo += "Max Connections: " + std::to_string(serverConfig->maxconnections()) + "\n";
+    roomsInfo += "Ping Timeout: " + std::to_string(serverConfig->pingtimeout()) + "\n";
     roomsInfo += "--- Room Configuration ---\n";
     for (const auto& room : serverConfig->rooms()) {
         roomsInfo += std::format("  ID: {}, Name: {}, Has Password: {}, Password: {}, MaxConnections: {} IsPublic:{}\n", room.id(), room.name(), (room.haspassword() ? "true" : "false"), room.password(), room.maxconnections(), (room.ispublic() ? "true" : "false"));
@@ -70,7 +71,7 @@ int main()
 
     server = new Server(file_logger);
     
-    server->Initialize(serverConfig);  //localhost
+    server->Initialize(serverConfig);
 
 
     try

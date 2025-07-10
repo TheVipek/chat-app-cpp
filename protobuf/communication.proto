@@ -5,6 +5,8 @@ syntax = "proto3";
 message AdvancedServerConfig{
     SimpleServerConfig server = 1;
     repeated Room rooms = 2;
+    int32 maxConnections = 3;
+    int32 pingTimeout = 4;
 }
 
 message Room {

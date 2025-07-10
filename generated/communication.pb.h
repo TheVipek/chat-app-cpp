@@ -2380,6 +2380,8 @@ class AdvancedServerConfig final : public ::google::protobuf::Message
   enum : int {
     kRoomsFieldNumber = 2,
     kServerFieldNumber = 1,
+    kMaxConnectionsFieldNumber = 3,
+    kPingTimeoutFieldNumber = 4,
   };
   // repeated .Room rooms = 2;
   int rooms_size() const;
@@ -2413,12 +2415,32 @@ class AdvancedServerConfig final : public ::google::protobuf::Message
   ::SimpleServerConfig* _internal_mutable_server();
 
   public:
+  // int32 maxConnections = 3;
+  void clear_maxconnections() ;
+  ::int32_t maxconnections() const;
+  void set_maxconnections(::int32_t value);
+
+  private:
+  ::int32_t _internal_maxconnections() const;
+  void _internal_set_maxconnections(::int32_t value);
+
+  public:
+  // int32 pingTimeout = 4;
+  void clear_pingtimeout() ;
+  ::int32_t pingtimeout() const;
+  void set_pingtimeout(::int32_t value);
+
+  private:
+  ::int32_t _internal_pingtimeout() const;
+  void _internal_set_pingtimeout(::int32_t value);
+
+  public:
   // @@protoc_insertion_point(class_scope:AdvancedServerConfig)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 2,
+      2, 4, 2,
       0, 2>
       _table_;
 
@@ -2440,6 +2462,8 @@ class AdvancedServerConfig final : public ::google::protobuf::Message
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::Room > rooms_;
     ::SimpleServerConfig* server_;
+    ::int32_t maxconnections_;
+    ::int32_t pingtimeout_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -2605,6 +2629,50 @@ inline ::google::protobuf::RepeatedPtrField<::Room>*
 AdvancedServerConfig::_internal_mutable_rooms() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.rooms_;
+}
+
+// int32 maxConnections = 3;
+inline void AdvancedServerConfig::clear_maxconnections() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.maxconnections_ = 0;
+}
+inline ::int32_t AdvancedServerConfig::maxconnections() const {
+  // @@protoc_insertion_point(field_get:AdvancedServerConfig.maxConnections)
+  return _internal_maxconnections();
+}
+inline void AdvancedServerConfig::set_maxconnections(::int32_t value) {
+  _internal_set_maxconnections(value);
+  // @@protoc_insertion_point(field_set:AdvancedServerConfig.maxConnections)
+}
+inline ::int32_t AdvancedServerConfig::_internal_maxconnections() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.maxconnections_;
+}
+inline void AdvancedServerConfig::_internal_set_maxconnections(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.maxconnections_ = value;
+}
+
+// int32 pingTimeout = 4;
+inline void AdvancedServerConfig::clear_pingtimeout() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.pingtimeout_ = 0;
+}
+inline ::int32_t AdvancedServerConfig::pingtimeout() const {
+  // @@protoc_insertion_point(field_get:AdvancedServerConfig.pingTimeout)
+  return _internal_pingtimeout();
+}
+inline void AdvancedServerConfig::set_pingtimeout(::int32_t value) {
+  _internal_set_pingtimeout(value);
+  // @@protoc_insertion_point(field_set:AdvancedServerConfig.pingTimeout)
+}
+inline ::int32_t AdvancedServerConfig::_internal_pingtimeout() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.pingtimeout_;
+}
+inline void AdvancedServerConfig::_internal_set_pingtimeout(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.pingtimeout_ = value;
 }
 
 // -------------------------------------------------------------------

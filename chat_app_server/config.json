@@ -36,5 +36,7 @@
             "maxConnections": 8,
             "isPublic": false
         }
-    ]
+    ],
+    "maxConnections": 200,
+    "pingTimeout": 5
 }

@@ -7,7 +7,6 @@
 #include "Room/RoomContainer.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
-
 class ServerMessageHandler;
 
 class Server
@@ -43,7 +42,6 @@ public:
 	ClientUser* GetUser(int userID);
 	std::vector<ClientUser> GetAllUsersTemp();
 	SOCKET GetUserSocket(ClientUser* client);
-
 	/// <summary>
 	/// Adds empty user, by default client data is not propagated fully, until /setnick command call.
 	/// </summary>
@@ -66,14 +64,15 @@ public:
 	/// <param name="socket"></param>
 	/// <param name="notify">If true and user is currently in room, it will send notification to the other clients</param>
 	void RemoveUser(SOCKET socket, bool notify);
-
+	/// <summary>
+	/// Sends to all clients information about connected users
+	/// </summary>
 	void SendUpdateOfAllUsers();
 protected:
 	std::shared_ptr<spdlog::logger> file_logger;
 	bool initialized;
 	SOCKET serverSocket;
 	sockaddr_in serverAddr;
-	int maxConnections;
 	
 	AdvancedServerConfig* serverConfig;
 	ServerMessageHandler* serverMessageHandler;
@@ -81,16 +80,9 @@ protected:
 	std::unordered_map<int, ClientUser*> userByID;
 	std::map<std::string, RoomContainer*> roomContainers;
 	std::unordered_map<SOCKET, std::chrono::steady_clock::time_point> lastTimeActivity;
-	fd_set writeSet;
-	fd_set readSet;
-	sockaddr_in clientAddr;
-	SOCKET fdmax;
-	SOCKET newfd;
-	
-	int receivedBytes;
-	int addrlen;
-
-	int pingTimeoutSeconds = 5;
+	fd_set writeSet; // sockets ready to write
+	fd_set readSet; // sockets ready to read
+	SOCKET fdmax; //socket with max descriptor val
 	void PingClients();
 	void UpdateClientActivity(SOCKET sender);
 };

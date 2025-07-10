@@ -1,4 +1,3 @@
-#define MAX_CONNECTIONS 200
 #include <iostream>
 #include "server.h"
 #include "ServerMessageHandler.h"
@@ -11,7 +10,6 @@ Server::Server(std::shared_ptr<spdlog::logger> _file_logger) {
     userByID = std::unordered_map<int, ClientUser*>();
     roomContainers = std::map<std::string, RoomContainer*>();
     initialized = false;
-    this->maxConnections = MAX_CONNECTIONS;
     serverMessageHandler = new ServerMessageHandler(this, _file_logger);
 }
 
@@ -42,7 +40,7 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
         return false;
     
     serverConfig = _serverConfig;
-
+    
     for (const Room& room : serverConfig->rooms())
     {
         Room* roomData = new Room();
@@ -93,7 +91,7 @@ bool Server::Initialize(AdvancedServerConfig* _serverConfig) {
 
     SPDLOG_LOGGER_INFO(file_logger, "Server listening on port {}", serverConfig->server().port());
 
-    if (listen(serverSocket, maxConnections) == SOCKET_ERROR) {
+    if (listen(serverSocket, serverConfig->maxconnections()) == SOCKET_ERROR) {
         SPDLOG_LOGGER_ERROR(file_logger, "Listen failed: {}", WSAGetLastError());
         closesocket(serverSocket);
         return false;
@@ -126,7 +124,7 @@ void Server::PingClients() {
         SOCKET soc = writeSet.fd_array[i];
         if (UserExists(soc))
         {
-            if (now - lastTimeActivity[soc] > std::chrono::seconds(pingTimeoutSeconds)) {
+            if (now - lastTimeActivity[soc] > std::chrono::seconds(serverConfig->pingtimeout())) {
                 auto user = connectedUsers[soc];
                 SPDLOG_LOGGER_INFO(file_logger, "Ping socket {}, user {}#{}, payload {}", soc, user->name(), user->id(), ping_envelope.payload());
                 bool failed = Send(ping_envelope, soc).size() > 0;
@@ -189,8 +187,10 @@ void Server::Run() {
             //handle connection to server
             if (senderSocket == serverSocket)
             {
-                addrlen = sizeof(clientAddr);
+                sockaddr_in clientAddr;
+                int addrlen = sizeof(clientAddr);
 
+                SOCKET newfd;
                 if ((newfd = accept(serverSocket, (sockaddr*)&clientAddr, &addrlen)) == INVALID_SOCKET)
                 {
                     SPDLOG_LOGGER_ERROR(file_logger, "SOCKET ACCEPT ERROR {}", WSAGetLastError());
@@ -429,10 +429,12 @@ bool Server::UserExists(SOCKET socket)
 {
     return connectedUsers.contains(socket);
 }
+
 bool Server::UserExists(int userID)
 {
     return userByID.contains(userID);
 }
+
 ClientUser* Server::GetUser(SOCKET socket) 
 {
     if (UserExists(socket))
@@ -441,6 +443,7 @@ ClientUser* Server::GetUser(SOCKET socket)
     }
     return nullptr;
 }
+
 ClientUser* Server::GetUser(int userID)
 {
     if (UserExists(userID))
@@ -449,6 +452,7 @@ ClientUser* Server::GetUser(int userID)
     }
     return nullptr;
 }
+
 std::vector<ClientUser> Server::GetAllUsersTemp()
 {
     std::vector<ClientUser> users;
@@ -469,6 +473,7 @@ std::vector<ClientUser> Server::GetAllUsersTemp()
 
     return users;
 }
+
 SOCKET Server::GetUserSocket(ClientUser* client)
 {
     for (auto v : connectedUsers)
@@ -481,6 +486,7 @@ SOCKET Server::GetUserSocket(ClientUser* client)
 
     return -1;
 }
+
 void Server::AddStartUpUser(SOCKET sock)
 {
 
@@ -492,6 +498,7 @@ void Server::AddStartUpUser(SOCKET sock)
     connectedUsers.insert({ sock, newUser });
     //skip adding to userByID
 }
+
 void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int roomID, std::string roomName)
 {
     if (UserExists(sock))
@@ -537,6 +544,7 @@ void Server::UpdateExistingUserData(SOCKET sock, int id, std::string name, int r
         SendUpdateOfAllUsers();
     }
 }
+
 void Server::RemoveUser(SOCKET socket, bool notify)
 {
     if (UserExists(socket))
@@ -598,9 +606,11 @@ void Server::SendUpdateOfAllUsers()
     envelope2.set_payload(serialized);
     Send(envelope2, serverSocket);
 }
+
 bool Server::HasRoom(std::string roomName) {
     return roomContainers.contains(roomName);
 }
+
 int Server::MaxRoomID()
 {
     int maxID = -1;
@@ -617,6 +627,7 @@ int Server::MaxRoomID()
 RoomContainer* Server::GetRoomContainer(std::string roomName) {
     return roomContainers[roomName];
 }
+
 RoomContainer* Server::GetRoomContainer(int roomID) {
     for (auto& k : roomContainers)
     {
@@ -629,6 +640,7 @@ RoomContainer* Server::GetRoomContainer(int roomID) {
 
     return nullptr;
 }
+
 std::vector<RoomContainer*> Server::GetRoomContainers()
 {
     std::vector<RoomContainer*> _roomContainers = std::vector<RoomContainer*>();
@@ -640,6 +652,7 @@ std::vector<RoomContainer*> Server::GetRoomContainers()
 
     return _roomContainers;
 }
+
 RoomContainer* Server::CreateRoom(std::string name, int maxConnections, bool isPublic, std::string password, bool destroyOnEmpty)
 {
     Room* newRoom = new Room();
@@ -665,6 +678,7 @@ RoomContainer* Server::CreateRoom(std::string name, int maxConnections, bool isP
 
     return container;
 }
+
 void Server::RemoveRoom(std::string name)
 {
     if (roomContainers.contains(name))

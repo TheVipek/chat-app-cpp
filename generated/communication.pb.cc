@@ -294,7 +294,9 @@ inline constexpr AdvancedServerConfig::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
         rooms_{},
-        server_{nullptr} {}
+        server_{nullptr},
+        maxconnections_{0},
+        pingtimeout_{0} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR AdvancedServerConfig::AdvancedServerConfig(::_pbi::ConstantInitialized)
@@ -331,7 +333,11 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.server_),
         PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.rooms_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.maxconnections_),
+        PROTOBUF_FIELD_OFFSET(::AdvancedServerConfig, _impl_.pingtimeout_),
         0,
+        ~0u,
+        ~0u,
         ~0u,
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::Room, _internal_metadata_),
@@ -434,16 +440,16 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 10, -1, sizeof(::AdvancedServerConfig)},
-        {12, -1, -1, sizeof(::Room)},
-        {26, -1, -1, sizeof(::SimpleServerConfig)},
-        {36, -1, -1, sizeof(::ClientUser)},
-        {48, -1, -1, sizeof(::ClientUserList)},
-        {57, -1, -1, sizeof(::ChatMessage)},
-        {68, -1, -1, sizeof(::CommandRequest)},
-        {78, -1, -1, sizeof(::CommandResponse)},
-        {88, -1, -1, sizeof(::Envelope)},
-        {99, -1, -1, sizeof(::WhisperData)},
+        {0, 12, -1, sizeof(::AdvancedServerConfig)},
+        {16, -1, -1, sizeof(::Room)},
+        {30, -1, -1, sizeof(::SimpleServerConfig)},
+        {40, -1, -1, sizeof(::ClientUser)},
+        {52, -1, -1, sizeof(::ClientUserList)},
+        {61, -1, -1, sizeof(::ChatMessage)},
+        {72, -1, -1, sizeof(::CommandRequest)},
+        {82, -1, -1, sizeof(::CommandResponse)},
+        {92, -1, -1, sizeof(::Envelope)},
+        {103, -1, -1, sizeof(::WhisperData)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_AdvancedServerConfig_default_instance_._instance,
@@ -459,42 +465,43 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_communication_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n\023communication.proto\"Q\n\024AdvancedServerC"
+    "\n\023communication.proto\"~\n\024AdvancedServerC"
     "onfig\022#\n\006server\030\001 \001(\0132\023.SimpleServerConf"
-    "ig\022\024\n\005rooms\030\002 \003(\0132\005.Room\"q\n\004Room\022\n\n\002id\030\001"
-    " \001(\005\022\014\n\004name\030\002 \001(\t\022\023\n\013hasPassword\030\003 \001(\010\022"
-    "\020\n\010password\030\004 \001(\t\022\026\n\016maxConnections\030\005 \001("
-    "\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServerConfi"
-    "g\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"Q\n\nClie"
-    "ntUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n\017conn"
-    "ectedRoomID\030\003 \001(\005\022\020\n\010roomName\030\004 \001(\t\",\n\016C"
-    "lientUserList\022\032\n\005users\030\001 \003(\0132\013.ClientUse"
-    "r\"U\n\013ChatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n\007mess"
-    "age\030\002 \001(\t\022%\n\013messageType\030\003 \001(\0162\020.ChatMes"
-    "sageType\"<\n\016CommandRequest\022\017\n\007request\030\001 "
-    "\001(\t\022\031\n\021requestParameters\030\002 \003(\t\"\?\n\017Comman"
-    "dResponse\022\032\n\004type\030\001 \001(\0162\014.CommandType\022\020\n"
-    "\010response\030\002 \001(\014\"[\n\010Envelope\022\"\n\010sendType\030"
-    "\001 \001(\0162\020.MessageSendType\022\032\n\004type\030\002 \001(\0162\014."
-    "MessageType\022\017\n\007payload\030\003 \001(\014\",\n\013WhisperD"
-    "ata\022\014\n\004from\030\001 \001(\t\022\017\n\007message\030\002 \001(\t*D\n\017Ch"
-    "atMessageType\022\023\n\017MESSAGE_IN_ROOM\020\000\022\017\n\013IN"
-    "FORMATION\020\001\022\013\n\007WHISPER\020\002*\203\001\n\013CommandType"
-    "\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAME\020\002\022\r\n"
-    "\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tROOM_LIS"
-    "T\020\005\022\017\n\013CREATE_ROOM\020\006\022\020\n\014USER_WHISPER\020\007*u"
-    "\n\013MessageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016USER_"
-    "JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n\007COMM"
-    "AND\020\004\022\010\n\004PING\020\005\022\024\n\020ALL_USERS_UPDATE\020\006*b\n"
-    "\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITHIN_RO"
-    "OM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n\n\006GLO"
-    "BAL\020\003\022\n\n\006DIRECT\020\004b\006proto3"
+    "ig\022\024\n\005rooms\030\002 \003(\0132\005.Room\022\026\n\016maxConnectio"
+    "ns\030\003 \001(\005\022\023\n\013pingTimeout\030\004 \001(\005\"q\n\004Room\022\n\n"
+    "\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\023\n\013hasPassword\030\003"
+    " \001(\010\022\020\n\010password\030\004 \001(\t\022\026\n\016maxConnections"
+    "\030\005 \001(\005\022\020\n\010isPublic\030\006 \001(\010\"3\n\022SimpleServer"
+    "Config\022\017\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"Q\n"
+    "\nClientUser\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\027\n"
+    "\017connectedRoomID\030\003 \001(\005\022\020\n\010roomName\030\004 \001(\t"
+    "\",\n\016ClientUserList\022\032\n\005users\030\001 \003(\0132\013.Clie"
+    "ntUser\"U\n\013ChatMessage\022\016\n\006sender\030\001 \001(\t\022\017\n"
+    "\007message\030\002 \001(\t\022%\n\013messageType\030\003 \001(\0162\020.Ch"
+    "atMessageType\"<\n\016CommandRequest\022\017\n\007reque"
+    "st\030\001 \001(\t\022\031\n\021requestParameters\030\002 \003(\t\"\?\n\017C"
+    "ommandResponse\022\032\n\004type\030\001 \001(\0162\014.CommandTy"
+    "pe\022\020\n\010response\030\002 \001(\014\"[\n\010Envelope\022\"\n\010send"
+    "Type\030\001 \001(\0162\020.MessageSendType\022\032\n\004type\030\002 \001"
+    "(\0162\014.MessageType\022\017\n\007payload\030\003 \001(\014\",\n\013Whi"
+    "sperData\022\014\n\004from\030\001 \001(\t\022\017\n\007message\030\002 \001(\t*"
+    "D\n\017ChatMessageType\022\023\n\017MESSAGE_IN_ROOM\020\000\022"
+    "\017\n\013INFORMATION\020\001\022\013\n\007WHISPER\020\002*\203\001\n\013Comman"
+    "dType\022\013\n\007INVALID\020\000\022\010\n\004HELP\020\001\022\014\n\010NICKNAME"
+    "\020\002\022\r\n\tJOIN_ROOM\020\003\022\016\n\nLEAVE_ROOM\020\004\022\r\n\tROO"
+    "M_LIST\020\005\022\017\n\013CREATE_ROOM\020\006\022\020\n\014USER_WHISPE"
+    "R\020\007*u\n\013MessageType\022\020\n\014CHAT_MESSAGE\020\000\022\022\n\016"
+    "USER_JOIN_ROOM\020\001\022\023\n\017USER_LEAVE_ROOM\020\002\022\013\n"
+    "\007COMMAND\020\004\022\010\n\004PING\020\005\022\024\n\020ALL_USERS_UPDATE"
+    "\020\006*b\n\017MessageSendType\022\t\n\005LOCAL\020\000\022\017\n\013WITH"
+    "IN_ROOM\020\001\022\033\n\027WITHIN_ROOM_EXCEPT_THIS\020\002\022\n"
+    "\n\006GLOBAL\020\003\022\n\n\006DIRECT\020\004b\006proto3"
 };
 static ::absl::once_flag descriptor_table_communication_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_communication_2eproto = {
     false,
     false,
-    1185,
+    1230,
     descriptor_table_protodef_communication_2eproto,
     "communication.proto",
     &descriptor_table_communication_2eproto_once,
@@ -586,6 +593,13 @@ AdvancedServerConfig::AdvancedServerConfig(
   _impl_.server_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::SimpleServerConfig>(
                               arena, *from._impl_.server_)
                         : nullptr;
+  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, maxconnections_),
+           reinterpret_cast<const char *>(&from._impl_) +
+               offsetof(Impl_, maxconnections_),
+           offsetof(Impl_, pingtimeout_) -
+               offsetof(Impl_, maxconnections_) +
+               sizeof(Impl_::pingtimeout_));
 
   // @@protoc_insertion_point(copy_constructor:AdvancedServerConfig)
 }
@@ -597,7 +611,12 @@ inline PROTOBUF_NDEBUG_INLINE AdvancedServerConfig::Impl_::Impl_(
 
 inline void AdvancedServerConfig::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  _impl_.server_ = {};
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, server_),
+           0,
+           offsetof(Impl_, pingtimeout_) -
+               offsetof(Impl_, server_) +
+               sizeof(Impl_::pingtimeout_));
 }
 AdvancedServerConfig::~AdvancedServerConfig() {
   // @@protoc_insertion_point(destructor:AdvancedServerConfig)
@@ -659,15 +678,15 @@ const ::google::protobuf::internal::ClassData* AdvancedServerConfig::GetClassDat
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 2, 0, 2> AdvancedServerConfig::_table_ = {
+const ::_pbi::TcParseTable<2, 4, 2, 0, 2> AdvancedServerConfig::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_._has_bits_),
     0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
+    4, 24,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967292,  // skipmap
+    4294967280,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
+    4,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     _class_data_.base(),
@@ -677,12 +696,18 @@ const ::_pbi::TcParseTable<1, 2, 2, 0, 2> AdvancedServerConfig::_table_ = {
     ::_pbi::TcParser::GetTable<::AdvancedServerConfig>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // repeated .Room rooms = 2;
-    {::_pbi::TcParser::FastMtR1,
-     {18, 63, 1, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_)}},
+    // int32 pingTimeout = 4;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(AdvancedServerConfig, _impl_.pingtimeout_), 63>(),
+     {32, 63, 0, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.pingtimeout_)}},
     // .SimpleServerConfig server = 1;
     {::_pbi::TcParser::FastMtS1,
      {10, 0, 0, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.server_)}},
+    // repeated .Room rooms = 2;
+    {::_pbi::TcParser::FastMtR1,
+     {18, 63, 1, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_)}},
+    // int32 maxConnections = 3;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(AdvancedServerConfig, _impl_.maxconnections_), 63>(),
+     {24, 63, 0, PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.maxconnections_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -692,6 +717,12 @@ const ::_pbi::TcParseTable<1, 2, 2, 0, 2> AdvancedServerConfig::_table_ = {
     // repeated .Room rooms = 2;
     {PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.rooms_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    // int32 maxConnections = 3;
+    {PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.maxconnections_), -1, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
+    // int32 pingTimeout = 4;
+    {PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.pingtimeout_), -1, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kInt32)},
   }}, {{
     {::_pbi::TcParser::GetTable<::SimpleServerConfig>()},
     {::_pbi::TcParser::GetTable<::Room>()},
@@ -712,6 +743,9 @@ PROTOBUF_NOINLINE void AdvancedServerConfig::Clear() {
     ABSL_DCHECK(_impl_.server_ != nullptr);
     _impl_.server_->Clear();
   }
+  ::memset(&_impl_.maxconnections_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.pingtimeout_) -
+      reinterpret_cast<char*>(&_impl_.maxconnections_)) + sizeof(_impl_.pingtimeout_));
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -748,6 +782,20 @@ PROTOBUF_NOINLINE void AdvancedServerConfig::Clear() {
                 ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
                     2, repfield, repfield.GetCachedSize(),
                     target, stream);
+          }
+
+          // int32 maxConnections = 3;
+          if (this_._internal_maxconnections() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<3>(
+                    stream, this_._internal_maxconnections(), target);
+          }
+
+          // int32 pingTimeout = 4;
+          if (this_._internal_pingtimeout() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<4>(
+                    stream, this_._internal_pingtimeout(), target);
           }
 
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -791,6 +839,18 @@ PROTOBUF_NOINLINE void AdvancedServerConfig::Clear() {
                             ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.server_);
             }
           }
+           {
+            // int32 maxConnections = 3;
+            if (this_._internal_maxconnections() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_maxconnections());
+            }
+            // int32 pingTimeout = 4;
+            if (this_._internal_pingtimeout() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_pingtimeout());
+            }
+          }
           return this_.MaybeComputeUnknownFieldsSize(total_size,
                                                      &this_._impl_._cached_size_);
         }
@@ -816,6 +876,12 @@ void AdvancedServerConfig::MergeImpl(::google::protobuf::MessageLite& to_msg, co
       _this->_impl_.server_->MergeFrom(*from._impl_.server_);
     }
   }
+  if (from._internal_maxconnections() != 0) {
+    _this->_impl_.maxconnections_ = from._impl_.maxconnections_;
+  }
+  if (from._internal_pingtimeout() != 0) {
+    _this->_impl_.pingtimeout_ = from._impl_.pingtimeout_;
+  }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -833,7 +899,12 @@ void AdvancedServerConfig::InternalSwap(AdvancedServerConfig* PROTOBUF_RESTRICT 
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.rooms_.InternalSwap(&other->_impl_.rooms_);
-  swap(_impl_.server_, other->_impl_.server_);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.pingtimeout_)
+      + sizeof(AdvancedServerConfig::_impl_.pingtimeout_)
+      - PROTOBUF_FIELD_OFFSET(AdvancedServerConfig, _impl_.server_)>(
+          reinterpret_cast<char*>(&_impl_.server_),
+          reinterpret_cast<char*>(&other->_impl_.server_));
 }
 
 ::google::protobuf::Metadata AdvancedServerConfig::GetMetadata() const {

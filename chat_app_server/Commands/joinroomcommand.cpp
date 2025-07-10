@@ -6,6 +6,8 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
     Envelope envelope{};
     envelope.set_type(MessageType::COMMAND);
     envelope.set_sendtype(MessageSendType::LOCAL);
+
+
     auto user = server->GetUser(senderSocket);
 
 
@@ -35,6 +37,18 @@ void JoinRoomCommand::Execute(const CommandRequest& creq, const SOCKET senderSoc
         return;
     }
     
+    if (creq.requestparameters().size() == 0 || creq.requestparameters().size() > 2)
+    {
+        CommandResponse cres{};
+        SPDLOG_LOGGER_WARN(file_logger, "Invalid usage");
+        cres.set_response("Invalid usage of /joinRoom (eg. /joinRoom #Lobby)");
+        cres.set_type(CommandType::INVALID);
+        envelope.set_payload(cres.SerializeAsString());
+
+        server->Send(envelope, senderSocket);
+
+        return;
+    }
     
     //try to join without password
     if (creq.requestparameters().size() == 1)
