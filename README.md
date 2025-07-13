@@ -56,7 +56,7 @@ cmake --build .
 
 ## Screenshots
 ### Server
-<img width="991" height="708" alt="Zrzut ekranu 2025-07-13 150103" src="https://github.com/user-attachments/assets/9d6c3651-2cbe-4f45-8521-abb2490a3eef" />
+<img width="2418" height="1213" alt="Zrzut ekranu 2025-07-13 150711" src="https://github.com/user-attachments/assets/7c14ed5c-deda-4724-af07-670f45b065ea" />
 
 ### Client
 <img width="2554" height="1389" alt="Zrzut ekranu 2025-07-13 150513" src="https://github.com/user-attachments/assets/3ba181f4-6913-4116-9d6b-a933d93f2c52" />
