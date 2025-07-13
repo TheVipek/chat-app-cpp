@@ -13,9 +13,9 @@ Implemented in C++ using windows sockets for communication, ftxui for client-sid
   * ``/roomList``: Shows all available chat rooms (only public).
   * ``/setNick``: Changes your name.
   * ``/whisper [userName]#[userID] [message]`` Sends a private message to a specific user.
-*Server configuration: via a dedicated configuration file, including endpoint, predefined rooms, maximum connections, and ping timeout.
-*Client configuration: via a dedicated configuration file, allowing to specify server endpoint.
-*Logging: Utilizes `spdlog` for application logging.
+* Server configuration: via a dedicated configuration file, including endpoint, predefined rooms, maximum connections, and ping timeout.
+* Client configuration: via a dedicated configuration file, allowing to specify server endpoint.
+* Logging: Utilizes `spdlog` for application logging.
 
 ## Dependencies
 * Protobuf
