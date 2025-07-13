@@ -53,3 +53,7 @@ cmake --build .
 .\chat_app_client.exe
 ```
 ### 6. Enjoy!
+
+### Screenshots
+<img width="991" height="708" alt="Zrzut ekranu 2025-07-13 150103" src="https://github.com/user-attachments/assets/9d6c3651-2cbe-4f45-8521-abb2490a3eef" />
+
