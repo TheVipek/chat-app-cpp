@@ -4,7 +4,7 @@ Implemented in C++ using windows sockets for communication, ftxui for client-sid
 ## Features
 
 * Realtime communication
-* Simple CLI for client
+* Simple TUI for client
 * Extensible Command System: Supports a variety of commands implemented using the **Command Pattern** for easy extendability and robust testability. Available commands include:
   * ``/help``: Displays available commands.
   *  ``/createRoom [name] [maxConnections] [isPublic] [password (optional)]``: Creates a new chat room.
